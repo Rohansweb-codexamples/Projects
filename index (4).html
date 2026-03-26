@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ROHANSWEB.CO.UK | Interactive Media</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="https://rohansweb-codexamples.github.io/index.html/logo.png">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono&display=swap" rel="stylesheet">
+    <!-- Google Material Symbols -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    
+    <style>
+        :root {
+            --accent: #ffeb3b;
+            --bg: #000;
+            --glass: rgba(10, 10, 10, 0.85);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        .material-symbols-rounded {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            font-size: 24px;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg);
+            font-family: 'Space Mono', monospace;
+            color: white;
+            scroll-behavior: smooth;
+            overflow-x: hidden;
+        }
+
+        #app {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+        }
+
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 15px;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            pointer-events: none;
+        }
+
+        .logo-container {
+            pointer-events: auto;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            padding: 5px 15px 5px 8px;
+            border-radius: 40px;
+            backdrop-filter: blur(15px);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .logo-container:hover {
+            border-color: var(--accent);
+            transform: scale(1.02);
+        }
+
+        .brand-logo {
+            width: 32px;
+            height: 32px;
+            object-fit: contain;
+            filter: drop-shadow(0 0 5px rgba(255, 235, 59, 0.3));
+        }
+
+        .brand-name {
+            font-size: 0.75rem;
+            letter-spacing: 2px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        nav {
+            pointer-events: auto;
+            display: flex;
+            gap: 8px;
+            margin-right: 30px; /* Offset for spacing */
+        }
+
+        nav button {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 40px;
+            cursor: pointer;
+            backdrop-filter: blur(15px);
+            font-size: 0.75rem;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        nav button:hover {
+            background: var(--accent);
+            color: black;
+            border-color: var(--accent);
+        }
+
+        .section {
+            min-height: 100vh;
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        /* Animated Gradient Banner for Snippets */
+        .gradient-banner {
+            height: 400px;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(-45deg, #000000, #1a1a1a, #2c2c00, #1a1a1a);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .banner-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+        }
+
+        .banner-glow {
+            position: absolute;
+            width: 150%;
+            height: 150%;
+            background: radial-gradient(circle at center, rgba(255, 235, 59, 0.05) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        /* Video Gallery Layout */
+        .video-gallery {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 40px;
+            width: 90%;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding-bottom: 100px;
+        }
+
+        /* Video Player UI */
+        .video-container {
+            width: 100%;
+            background: #000;
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .video-container.pseudo-fullscreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            max-width: none;
+            z-index: 9999;
+            border-radius: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #000;
+        }
+
+        .video-container video {
+            width: 100%;
+            max-height: 100%;
+            display: block;
+        }
+
+        .custom-controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.95));
+            padding: 25px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            opacity: 0;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+            transform: translateY(10px);
+            pointer-events: none;
+        }
+
+        .video-container.show-controls .custom-controls {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-grow: 1;
+        }
+
+        .icon-btn {
+            background: var(--accent);
+            border: none;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            color: black;
+            transition: transform 0.2s, background 0.2s;
+        }
+
+        .icon-btn:active { transform: scale(0.9); }
+        .icon-btn.secondary { background: rgba(255,255,255,0.2); color: white; }
+
+        .progress-bar {
+            flex-grow: 1;
+            height: 6px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 3px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent);
+            width: 0%;
+            border-radius: 3px;
+        }
+
+        #exitFsBtn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10001;
+            display: none;
+        }
+
+        .hero {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+            background: radial-gradient(circle at center, #111 0%, #000 100%);
+        }
+
+        .typewriter {
+            font-size: clamp(2rem, 10vw, 6rem);
+            text-transform: uppercase;
+        }
+
+        .snippet-container {
+            width: 90%;
+            max-width: 900px;
+            margin: 30px auto;
+            background: var(--glass);
+            padding: 20px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            text-align: left;
+        }
+
+        .blog-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: transparent;
+            border: 1px solid var(--glass-border);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+            margin-top: 40px;
+            margin-bottom: 60px;
+        }
+
+        .blog-cta:hover {
+            background: var(--accent);
+            color: black;
+            border-color: var(--accent);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        .custom-cursor {
+            position: fixed;
+            width: 12px;
+            height: 12px;
+            background: white;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 99999;
+            mix-blend-mode: difference;
+            transform: translate(-50%, -50%);
+        }
+
+        @media (max-width: 768px) {
+            header { flex-direction: column; gap: 15px; padding-top: 10px; }
+            nav { margin-right: 0; }
+        }
+
+        @media (hover: none) {
+            .custom-cursor { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-container" onclick="showSection('home')">
+            <img src="https://rohansweb-codexamples.github.io/index.html/logo.png" alt="ROHANSWEB" class="brand-logo">
+            <span class="brand-name">ROHANSWEB</span>
+        </div>
+        <nav id="mainNav">
+            <button onclick="showSection('home')">
+                <span class="material-symbols-rounded">home</span> Home
+            </button>
+            <button onclick="showSection('snippets')">
+                <span class="material-symbols-rounded">code</span> Snippets
+            </button>
+            <button onclick="showSection('videos')">
+                <span class="material-symbols-rounded">play_circle</span> Videos
+            </button>
+        </nav>
+    </header>
+
+    <button id="exitFsBtn" class="icon-btn" onclick="exitPseudoFullscreen()">
+        <span class="material-symbols-rounded">fullscreen_exit</span>
+    </button>
+
+    <div id="app">
+        <!-- HOME -->
+        <section id="home" class="section active">
+            <div class="hero">
+                <h1 class="typewriter" id="typewriter"></h1>
+                <p style="opacity: 0.6; font-size: 0.8rem; letter-spacing: 2px;">CREATIVE_DEVELOPER_PORTFOLIO</p>
+            </div>
+        </section>
+
+        <!-- SNIPPETS -->
+        <section id="snippets" class="section">
+            <div class="gradient-banner">
+                <div class="banner-glow"></div>
+                <div id="snippetsHeader" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;"></div>
+                <div class="banner-content">
+                    <span class="material-symbols-rounded" style="font-size: 4rem; color: var(--accent); margin-bottom: 10px;">terminal</span>
+                    <h2 style="color:white; font-size: 2rem; letter-spacing: 4px; margin: 0;">CODE_REPOSITORY</h2>
+                    <p style="opacity: 0.6; font-size: 0.7rem; letter-spacing: 2px; margin-top: 10px;">INTERACTIVE SNIPPETS & EXPERIMENTS</p>
+                </div>
+            </div>
+
+            <div style="padding: 60px 20px; text-align: center;">
+                <div class="snippet-container">
+                    <div style="margin-bottom:15px; display:flex; align-items:center; gap:10px;">
+                        <span class="material-symbols-rounded" style="color:var(--accent)">terminal</span>
+                        <span style="font-size: 0.8rem;">MAYA_EXPLORER_PROTOTYPE</span>
+                    </div>
+                    <p class="codepen" data-height="450" data-theme-id="dark" data-default-tab="result" data-slug-hash="RNRqGvB" data-user="Rohansweb-codexamples" style="height: 450px; display: flex; align-items: center; justify-content: center; border: 1px solid #333; margin: 1em 0; padding: 1em;">
+                        <span>See the Pen <a href="https://codepen.io/Rohansweb-codexamples/pen/RNRqGvB">Maya Explorer</a> by Rohansweb-codexamples (<a href="https://codepen.io/Rohansweb-codexamples">@Rohansweb-codexamples</a>) on <a href="https://codepen.io">CodePen</a>.</span>
+                    </p>
+                </div>
+
+                <div class="snippet-container">
+                    <div style="margin-bottom:15px; display:flex; align-items:center; gap:10px;">
+                        <span class="material-symbols-rounded" style="color:var(--accent)">animation</span>
+                        <span style="font-size: 0.8rem;">PARTICLE_SIMULATION_V2</span>
+                    </div>
+                    <p class="codepen" data-height="450" data-theme-id="dark" data-default-tab="result" data-slug-hash="GgqwjLw" data-user="Rohansweb-codexamples" style="height: 450px; display: flex; align-items: center; justify-content: center; border: 1px solid #333; margin: 1em 0; padding: 1em;">
+                        <span>See the Pen <a href="https://codepen.io/Rohansweb-codexamples/pen/GgqwjLw">Particle Sim</a> by Rohansweb-codexamples (<a href="https://codepen.io/Rohansweb-codexamples">@Rohansweb-codexamples</a>) on <a href="https://codepen.io">CodePen</a>.</span>
+                    </p>
+                </div>
+
+                <a href="https://rohansweb-codexamples.blogspot.com" target="_blank" class="blog-cta">
+                    <span class="material-symbols-rounded">launch</span>
+                    View Our Blog
+                </a>
+            </div>
+        </section>
+
+        <!-- VIDEOS -->
+        <section id="videos" class="section">
+            <div style="padding: 120px 20px 40px; text-align: center;">
+                <h2 style="color:var(--accent); margin-bottom: 40px; letter-spacing: 4px;">MEDIA_REEL</h2>
+                
+                <div class="video-gallery">
+                    <!-- Video 1: Web Dev -->
+                    <div class="video-container" onclick="handleVideoTap(this)">
+                        <video playsinline muted>
+                            <source src="https://rohansweb-codexamples.github.io/rohansweb-fluffy-pancake/HTML,%20CSS%20and%20JavaScript.mp4" type="video/mp4">
+                        </video>
+                        <div class="custom-controls">
+                            <button class="icon-btn" onclick="togglePlay(this, event)">
+                                <span class="material-symbols-rounded">play_arrow</span>
+                            </button>
+                            <div class="control-group">
+                                <div class="progress-bar" onclick="seek(this, event)">
+                                    <div class="progress-fill"></div>
+                                </div>
+                                <span class="v-time" style="font-size: 0.7rem; min-width: 45px;">0:00</span>
+                            </div>
+                            <button class="icon-btn secondary" onclick="toggleMute(this, event)">
+                                <span class="material-symbols-rounded">volume_off</span>
+                            </button>
+                            <button class="icon-btn secondary" onclick="toggleFullScreen(this, event)">
+                                <span class="material-symbols-rounded">fullscreen</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Video 2: Python -->
+                    <div class="video-container" onclick="handleVideoTap(this)">
+                        <video playsinline muted>
+                            <source src="https://rohansweb-codexamples.github.io/index.html/PYTHON-vid.mp4" type="video/mp4">
+                        </video>
+                        <div class="custom-controls">
+                            <button class="icon-btn" onclick="togglePlay(this, event)">
+                                <span class="material-symbols-rounded">play_arrow</span>
+                            </button>
+                            <div class="control-group">
+                                <div class="progress-bar" onclick="seek(this, event)">
+                                    <div class="progress-fill"></div>
+                                </div>
+                                <span class="v-time" style="font-size: 0.7rem; min-width: 45px;">0:00</span>
+                            </div>
+                            <button class="icon-btn secondary" onclick="toggleMute(this, event)">
+                                <span class="material-symbols-rounded">volume_off</span>
+                            </button>
+                            <button class="icon-btn secondary" onclick="toggleFullScreen(this, event)">
+                                <span class="material-symbols-rounded">fullscreen</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <p style="margin-top: 25px; opacity: 0.4; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px;">Click video to toggle interface • Audio muted by default</p>
+            </div>
+        </section>
+    </div>
+
+    <div class="custom-cursor" id="cursor"></div>
+
+    <script async src="https://cpwebassets.codepen.io/assets/embed/ei.js"></script>
+
+    <script>
+        // --- Navigation ---
+        function showSection(id) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            window.scrollTo(0,0);
+        }
+
+        // --- Video Player Logic ---
+        let controlTimeout;
+
+        function togglePlay(btn, e) {
+            if(e) e.stopPropagation();
+            const container = btn.closest('.video-container');
+            const video = container.querySelector('video');
+            const icon = btn.querySelector('.material-symbols-rounded');
+
+            if (video.paused) {
+                document.querySelectorAll('video').forEach(v => { if(v !== video) v.pause(); });
+                video.play();
+                icon.textContent = 'pause';
+            } else {
+                video.pause();
+                icon.textContent = 'play_arrow';
+            }
+        }
+
+        function toggleMute(btn, e) {
+            if(e) e.stopPropagation();
+            const video = btn.closest('.video-container').querySelector('video');
+            const icon = btn.querySelector('.material-symbols-rounded');
+            video.muted = !video.muted;
+            icon.textContent = video.muted ? 'volume_off' : 'volume_up';
+        }
+
+        function handleVideoTap(container) {
+            container.classList.toggle('show-controls');
+            resetControlTimeout(container);
+        }
+
+        function resetControlTimeout(container) {
+            clearTimeout(controlTimeout);
+            const video = container.querySelector('video');
+            if(container.classList.contains('show-controls') && !video.paused) {
+                controlTimeout = setTimeout(() => {
+                    container.classList.remove('show-controls');
+                }, 3000);
+            }
+        }
+
+        document.querySelectorAll('video').forEach(video => {
+            video.ontimeupdate = () => {
+                const container = video.closest('.video-container');
+                const fill = container.querySelector('.progress-fill');
+                const timeLabel = container.querySelector('.v-time');
+                
+                if (video.duration) {
+                    const pct = (video.currentTime / video.duration) * 100;
+                    fill.style.width = pct + '%';
+                    let mins = Math.floor(video.currentTime / 60);
+                    let secs = Math.floor(video.currentTime % 60);
+                    timeLabel.innerText = `${mins}:${secs < 10 ? '0'+secs : secs}`;
+                }
+            };
+        });
+
+        function seek(bar, e) {
+            e.stopPropagation();
+            const video = bar.closest('.video-container').querySelector('video');
+            const rect = bar.getBoundingClientRect();
+            const pos = (e.clientX - rect.left) / rect.width;
+            video.currentTime = pos * video.duration;
+        }
+
+        function toggleFullScreen(btn, e) {
+            if(e) e.stopPropagation();
+            const container = btn.closest('.video-container');
+            
+            if (!container.classList.contains('pseudo-fullscreen')) {
+                enterPseudoFullscreen(container);
+            } else {
+                exitPseudoFullscreen();
+            }
+        }
+
+        function enterPseudoFullscreen(container) {
+            container.classList.add('pseudo-fullscreen');
+            document.querySelector('header').style.display = 'none';
+            document.getElementById('exitFsBtn').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function exitPseudoFullscreen() {
+            const container = document.querySelector('.video-container.pseudo-fullscreen');
+            if(container) container.classList.remove('pseudo-fullscreen');
+            document.querySelector('header').style.display = 'flex';
+            document.getElementById('exitFsBtn').style.display = 'none';
+            document.body.style.overflow = '';
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') exitPseudoFullscreen();
+        });
+
+        // --- Typewriter ---
+        const typeTarget = document.getElementById('typewriter');
+        const textToType = "ROHANSWEB";
+        let charIndex = 0;
+        function typeEffect() {
+            if (charIndex < textToType.length) {
+                typeTarget.textContent += textToType.charAt(charIndex);
+                charIndex++;
+                setTimeout(typeEffect, 150);
+            }
+        }
+
+        // --- Snippet Header Particles ---
+        function initSnippetHeader() {
+            const container = document.getElementById('snippetsHeader');
+            const canvas = document.createElement('canvas');
+            container.appendChild(canvas);
+            const ctx = canvas.getContext('2d');
+            const resize = () => { canvas.width = container.offsetWidth; canvas.height = container.offsetHeight; };
+            resize();
+            window.addEventListener('resize', resize);
+
+            const particles = Array.from({length: 150}, () => ({
+                x: Math.random() * 2000, 
+                y: Math.random() * 400,
+                color: `hsl(${Math.random()*360}, 60%, 50%)`, 
+                glow: 0
+            }));
+
+            let mx = -1000, my = -1000;
+            const handleMove = (e) => {
+                const r = container.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                mx = clientX - r.left; 
+                my = clientY - r.top;
+            };
+
+            container.addEventListener('mousemove', handleMove);
+            container.addEventListener('touchmove', handleMove, {passive: true});
+
+            function loop() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height); 
+                particles.forEach(p => {
+                    const d = Math.hypot(p.x - mx, p.y - my);
+                    if(d < 100) p.glow = 1.0;
+                    ctx.fillStyle = p.glow > 0.05 ? p.color : 'rgba(255,255,255,0.05)';
+                    ctx.globalAlpha = Math.max(0.1, p.glow);
+                    ctx.beginPath(); 
+                    ctx.arc(p.x, p.y, 1.5 + p.glow*5, 0, Math.PI*2); 
+                    ctx.fill();
+                    p.glow *= 0.96;
+                });
+                requestAnimationFrame(loop);
+            }
+            loop();
+        }
+
+        // --- Global Interactions ---
+        document.addEventListener('mousemove', (e) => {
+            const cur = document.getElementById('cursor');
+            if(cur) { 
+                cur.style.left = e.clientX + 'px'; 
+                cur.style.top = e.clientY + 'px'; 
+            }
+        });
+
+        window.onload = () => {
+            typeEffect();
+            initSnippetHeader();
+        };
+    </script>
+</body>
+</html>
