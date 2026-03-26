@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bloom | Website Builder</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        
+        :root {
+            --bloom-green: #10b981;
+            --bloom-dark: #064e3b;
+            --bloom-soft: #ecfdf5;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f0f4f8;
+            color: #1e293b;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        /* View Switching */
+        #dashboard-view, #editor-view {
+            height: 100vh;
+            width: 100vw;
+            display: none;
+        }
+        .view-active { display: block !important; }
+
+        .sidebar {
+            background: white;
+            border-left: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            box-shadow: -4px 0 15px rgba(0,0,0,0.02);
+        }
+
+        .editor-container {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            height: calc(100vh - 64px);
+        }
+
+        .canvas-viewport {
+            overflow-y: auto;
+            background-color: #cbd5e1;
+            padding: 60px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            scroll-behavior: smooth;
+        }
+
+        .site-page {
+            width: 100%;
+            max-width: 900px;
+            min-height: fit-content;
+            background: white;
+            box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.15);
+            border-radius: 12px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 300px;
+        }
+
+        .site-nav {
+            height: 70px;
+            padding: 0 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: white;
+            border-bottom: 1px solid #f1f5f9;
+            z-index: 40;
+            position: sticky;
+            top: 0;
+        }
+
+        .site-nav-links {
+            display: flex;
+            gap: 24px;
+        }
+
+        .nav-link-item {
+            font-size: 14px;
+            font-weight: 600;
+            color: #64748b;
+            cursor: pointer;
+            transition: color 0.2s;
+            position: relative;
+        }
+        .nav-link-item:hover, .nav-link-item.active {
+            color: var(--bloom-green);
+        }
+
+        #page-header {
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            min-height: 400px;
+            opacity: 1;
+            overflow: hidden;
+            transform-origin: top;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .element-wrapper {
+            position: relative;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+            border-radius: 8px;
+        }
+        
+        body:not(.preview-mode) .element-wrapper:hover {
+            border-color: var(--bloom-green);
+            background-color: rgba(16, 185, 129, 0.02);
+        }
+        
+        .element-controls {
+            position: absolute;
+            left: -50px;
+            top: 0;
+            display: none;
+            flex-direction: column;
+            gap: 6px;
+            z-index: 50;
+        }
+        
+        body:not(.preview-mode) .element-wrapper:hover .element-controls {
+            display: flex;
+        }
+
+        .embed-container {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .preview-mode .sidebar, 
+        .preview-mode .editor-nav,
+        .preview-mode .element-controls {
+            display: none !important;
+        }
+        .preview-mode .editor-container { grid-template-columns: 1fr; height: 100vh; }
+        .preview-mode .canvas-viewport { padding: 0; background: white; }
+        .preview-mode .site-page { box-shadow: none; max-width: 100%; border-radius: 0; margin-bottom: 0; }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body class=""> <!-- Removed preview-mode by default -->
+
+    <!-- Dashboard View -->
+    <div id="dashboard-view">
+        <nav class="h-20 bg-white border-b border-slate-100 flex items-center justify-between px-10 sticky top-0 z-50">
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-emerald-500 rounded-2xl flex items-center justify-center text-white shadow-lg">
+                    <i class="fas fa-seedling text-2xl"></i>
+                </div>
+                <div>
+                    <span class="text-2xl font-black tracking-tighter text-slate-800 block leading-none">BLOOM</span>
+                    <span class="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Site Builder</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                 <button onclick="openTemplatesModal()" class="text-slate-500 hover:text-slate-800 font-bold text-sm px-4">Browse Templates</button>
+                 <button onclick="createNewGarden()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-8 rounded-2xl transition-all shadow-xl shadow-emerald-100 flex items-center gap-3 active:scale-95">
+                    <i class="fas fa-plus"></i> Plant New Site
+                </button>
+            </div>
+        </nav>
+
+        <main class="max-w-7xl mx-auto p-12">
+            <h1 class="text-5xl font-extrabold text-slate-900 mb-3 tracking-tight">Your Digital Forest</h1>
+            <div id="gardens-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 mt-12"></div>
+            <div id="empty-state" class="hidden flex flex-col items-center justify-center py-32 text-center">
+                <h2 class="text-3xl font-bold text-slate-800 mb-3">Your forest is empty!</h2>
+                <button onclick="createNewGarden()" class="bg-emerald-600 text-white px-10 py-4 rounded-2xl font-bold shadow-lg">Start Building &rarr;</button>
+            </div>
+        </main>
+    </div>
+
+    <!-- Editor View -->
+    <div id="editor-view">
+        <nav class="editor-nav h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 z-50 relative">
+            <div class="flex items-center gap-4">
+                <button onclick="exitToDashboard()" class="w-10 h-10 flex items-center justify-center rounded-xl text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-all">
+                    <i class="fas fa-th-large"></i>
+                </button>
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center text-white">
+                        <i class="fas fa-leaf text-sm"></i>
+                    </div>
+                    <input type="text" id="site-title-input" oninput="autoSave()" class="text-sm font-extrabold text-slate-800 border-none bg-transparent focus:ring-0 w-48">
+                    <div id="save-indicator" class="flex items-center gap-2 text-[10px] font-black text-slate-300 uppercase tracking-widest opacity-40">
+                        <div class="w-1.5 h-1.5 bg-emerald-400 rounded-full"></div>
+                        Saved
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <div class="flex bg-slate-100 p-1 rounded-xl">
+                    <button onclick="togglePreview(false)" id="btn-edit-mode" class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-white text-emerald-600 shadow-sm">Editor</button>
+                    <button onclick="togglePreview(true)" id="btn-preview-mode" class="px-4 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-500 hover:text-slate-800">Preview</button>
+                </div>
+                <button onclick="generateShareLink()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-2.5 px-6 rounded-full transition shadow-lg">
+                    <i class="fas fa-paper-plane"></i> Publish
+                </button>
+            </div>
+        </nav>
+
+        <div class="editor-container">
+            <div class="canvas-viewport" id="viewport">
+                <div id="active-page" class="site-page">
+                    <header class="site-nav">
+                        <div class="flex items-center gap-2">
+                            <i class="fas fa-leaf text-emerald-500"></i>
+                            <span id="nav-brand-name" class="font-bold tracking-tight">GARDEN</span>
+                        </div>
+                        <nav id="site-header-nav" class="site-nav-links"></nav>
+                    </header>
+                    <div id="page-header" class="bg-slate-900 flex flex-col items-center justify-center relative group bg-cover bg-center">
+                        <div class="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60"></div>
+                        <div class="z-10 text-center px-6 py-20">
+                            <h1 id="main-title" contenteditable="true" oninput="autoSave()" class="text-5xl md:text-7xl font-black text-white mb-4 tracking-tighter drop-shadow-2xl uppercase">PAGE TITLE</h1>
+                            <p id="sub-title" contenteditable="true" oninput="autoSave()" class="text-white/80 text-xl font-medium max-w-xl mx-auto italic drop-shadow-md">A beautiful description for this page</p>
+                        </div>
+                        <div class="absolute bottom-6 right-6 opacity-0 group-hover:opacity-100 transition-all">
+                            <button onclick="triggerImageUpload('header')" class="bg-white text-slate-900 text-xs font-bold px-5 py-2.5 rounded-full shadow-xl flex items-center gap-2">
+                                <i class="fas fa-camera"></i> Change Background
+                            </button>
+                        </div>
+                    </div>
+                    <div id="page-content" oninput="autoSave()" class="p-12 md:p-20 space-y-12 min-h-[500px]"></div>
+                    <footer class="p-12 bg-slate-50 border-t border-slate-100 text-center">
+                        <p class="text-slate-400 text-xs font-bold uppercase tracking-widest">Built with Bloom &copy; 2024</p>
+                    </footer>
+                </div>
+            </div>
+
+            <aside class="sidebar h-full">
+                <div class="flex border-b border-slate-200">
+                    <button onclick="switchTab('insert')" id="tab-insert" class="flex-1 py-5 text-xs font-black uppercase tracking-widest border-b-2 border-emerald-500 text-emerald-600">Blocks</button>
+                    <button onclick="switchTab('pages')" id="tab-pages" class="flex-1 py-5 text-xs font-black uppercase tracking-widest text-slate-400 hover:text-slate-600">Pages</button>
+                </div>
+
+                <div id="panel-insert" class="flex-1 overflow-y-auto p-6 space-y-8">
+                    <section>
+                        <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Core Elements</h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button onclick="addBlock('title')" class="flex flex-col items-center gap-3 p-4 bg-white rounded-2xl border border-slate-100 hover:border-emerald-200 hover:bg-emerald-50 transition-all shadow-sm">
+                                <i class="fas fa-heading text-slate-400"></i>
+                                <span class="text-[10px] font-bold">Heading</span>
+                            </button>
+                            <button onclick="addBlock('text')" class="flex flex-col items-center gap-3 p-4 bg-white rounded-2xl border border-slate-100 hover:border-emerald-200 hover:bg-emerald-50 transition-all shadow-sm">
+                                <i class="fas fa-paragraph text-slate-400"></i>
+                                <span class="text-[10px] font-bold">Text</span>
+                            </button>
+                            <button onclick="addBlock('button')" class="flex flex-col items-center gap-3 p-4 bg-white rounded-2xl border border-slate-100 hover:border-emerald-200 hover:bg-emerald-50 transition-all shadow-sm">
+                                <i class="fas fa-mouse-pointer text-slate-400"></i>
+                                <span class="text-[10px] font-bold">Button</span>
+                            </button>
+                            <button onclick="triggerImageUpload('block')" class="flex flex-col items-center gap-3 p-4 bg-white rounded-2xl border border-slate-100 hover:border-emerald-200 hover:bg-emerald-50 transition-all shadow-sm">
+                                <i class="fas fa-image text-slate-400"></i>
+                                <span class="text-[10px] font-bold">Image</span>
+                            </button>
+                        </div>
+                    </section>
+                    <section>
+                        <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Advanced</h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button onclick="addBlock('cards')" class="flex flex-col items-center gap-3 p-4 bg-white rounded-2xl border border-slate-100 hover:border-emerald-200 hover:bg-emerald-50 transition-all shadow-sm">
+                                <i class="fas fa-th-large text-slate-400"></i>
+                                <span class="text-[10px] font-bold">Card Grid</span>
+                            </button>
+                            <button onclick="openEmbedModal()" class="flex flex-col items-center gap-3 p-4 bg-white rounded-2xl border border-slate-100 hover:border-emerald-200 hover:bg-emerald-50 transition-all shadow-sm">
+                                <i class="fas fa-code text-slate-400"></i>
+                                <span class="text-[10px] font-bold">Embed</span>
+                            </button>
+                        </div>
+                    </section>
+                </div>
+
+                <div id="panel-pages" class="flex-1 overflow-y-auto p-6 hidden">
+                    <div id="pages-list" class="space-y-2 mb-8"></div>
+                    <button onclick="createNewPage()" class="w-full py-4 border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 hover:border-emerald-500 hover:text-emerald-600 transition-all text-xs font-bold flex items-center justify-center gap-2">
+                        <i class="fas fa-plus"></i> New Page
+                    </button>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="embedModal" class="fixed inset-0 bg-slate-900/80 hidden z-[200] flex items-center justify-center p-6 backdrop-blur-sm">
+        <div class="bg-white rounded-[40px] p-10 max-w-xl w-full shadow-2xl">
+            <h3 class="text-3xl font-black mb-6 text-slate-800 text-center">Add Embed</h3>
+            
+            <div class="flex bg-slate-100 p-1 rounded-2xl mb-6">
+                <button onclick="setEmbedType('link')" id="embed-tab-link" class="flex-1 py-3 rounded-xl text-xs font-black uppercase transition-all bg-white text-emerald-600 shadow-sm">Link</button>
+                <button onclick="setEmbedType('iframe')" id="embed-tab-iframe" class="flex-1 py-3 rounded-xl text-xs font-black uppercase transition-all text-slate-400">Iframe</button>
+                <button onclick="setEmbedType('html')" id="embed-tab-html" class="flex-1 py-3 rounded-xl text-xs font-black uppercase transition-all text-slate-400">HTML</button>
+            </div>
+
+            <div id="embed-desc" class="text-slate-500 text-xs mb-4 text-center">Paste a URL to create a preview card.</div>
+            
+            <textarea id="embedCodeInput" placeholder="https://..." class="w-full h-32 p-4 rounded-2xl bg-slate-50 border-none outline-none focus:ring-2 focus:ring-emerald-500 font-mono text-sm resize-none mb-6"></textarea>
+            
+            <div class="flex gap-4">
+                <button onclick="closeEmbedModal()" class="flex-1 py-4 text-slate-400 font-black text-xs uppercase tracking-widest">Cancel</button>
+                <button onclick="confirmAddEmbed()" class="flex-1 bg-emerald-600 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-emerald-700 shadow-lg">Insert</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="shareModal" class="fixed inset-0 bg-slate-900/80 hidden z-[200] flex items-center justify-center p-6 backdrop-blur-sm">
+        <div class="bg-white rounded-[40px] p-10 max-w-md w-full shadow-2xl">
+            <h3 class="text-3xl font-black mb-3 text-center">Share Link</h3>
+            <div class="p-6 bg-slate-50 rounded-3xl border border-slate-100 mt-6">
+                <input type="text" id="share-url" readonly class="bg-transparent border-none text-xs w-full focus:ring-0 text-slate-500 font-mono mb-4">
+                <button onclick="copyShareUrl()" class="w-full bg-emerald-600 text-white py-4 rounded-2xl font-black">COPY LINK</button>
+            </div>
+            <button onclick="closeShareModal()" class="w-full mt-8 text-slate-400 text-xs font-black uppercase tracking-widest">Close</button>
+        </div>
+    </div>
+
+    <div id="templatesModal" class="fixed inset-0 bg-slate-900/80 hidden z-[200] flex items-center justify-center p-6 backdrop-blur-sm">
+        <div class="bg-white rounded-[40px] p-10 max-w-4xl w-full max-h-[80vh] overflow-y-auto">
+            <h3 class="text-3xl font-black mb-8">Templates</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="cursor-pointer bg-slate-50 rounded-3xl p-8 border hover:border-emerald-500" onclick="applyTemplate('portfolio')">
+                    <h4 class="font-bold text-xl mb-2">Minimalist Portfolio</h4>
+                    <p class="text-sm text-slate-500">Clean, professional, and content-focused.</p>
+                </div>
+                <div class="cursor-pointer bg-slate-50 rounded-3xl p-8 border hover:border-emerald-500" onclick="applyTemplate('event')">
+                    <h4 class="font-bold text-xl mb-2">Announcement</h4>
+                    <p class="text-sm text-slate-500">Bold layouts for special events.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <input type="file" id="imageInput" accept="image/*" class="hidden" onchange="handleImageUpload(event)">
+
+    <script>
+        let gardens = JSON.parse(localStorage.getItem('bloom_gardens') || '{}');
+        let currentGardenId = localStorage.getItem('bloom_last_garden') || null;
+        let currentPageId = 'home';
+        let currentEmbedType = 'link';
+        
+        function saveToDisk() { localStorage.setItem('bloom_gardens', JSON.stringify(gardens)); }
+
+        function showView(view) {
+            document.getElementById('dashboard-view').classList.toggle('view-active', view === 'dashboard');
+            document.getElementById('editor-view').classList.toggle('view-active', view === 'editor');
+        }
+
+        function exitToDashboard() {
+            saveCurrentPage();
+            showView('dashboard');
+            renderDashboard();
+        }
+
+        function renderDashboard() {
+            const grid = document.getElementById('gardens-grid');
+            const empty = document.getElementById('empty-state');
+            grid.innerHTML = '';
+            const keys = Object.keys(gardens);
+            if (keys.length === 0) { empty.classList.remove('hidden'); return; }
+            empty.classList.add('hidden');
+
+            keys.forEach(id => {
+                const g = gardens[id];
+                const card = document.createElement('div');
+                card.className = 'glass-card rounded-[32px] p-8 flex flex-col cursor-pointer group hover:scale-[1.02] transition-all';
+                card.onclick = () => openGarden(id);
+                card.innerHTML = `
+                    <div class="h-40 rounded-3xl mb-6 bg-slate-100 flex items-center justify-center text-slate-300">
+                        <i class="fas fa-leaf text-4xl"></i>
+                    </div>
+                    <h3 class="font-black text-2xl text-slate-800">${g.title}</h3>
+                    <div class="flex justify-between items-center mt-6">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">${Object.keys(g.pages).length} Pages</span>
+                        <button onclick="event.stopPropagation(); deleteGarden('${id}')" class="text-slate-300 hover:text-red-500 transition-all"><i class="fas fa-trash-alt"></i></button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function createNewGarden() {
+            const id = 'g_' + Math.random().toString(36).substr(2, 9);
+            gardens[id] = { title: 'My New Site', pages: { 'home': { name: 'Home', subtitle: 'Welcome to your new digital home.', content: '', headerImg: '' } } };
+            saveToDisk();
+            openGarden(id);
+        }
+
+        function openGarden(id) {
+            currentGardenId = id;
+            localStorage.setItem('bloom_last_garden', id);
+            const garden = gardens[id];
+            document.getElementById('site-title-input').value = garden.title;
+            document.getElementById('nav-brand-name').innerText = garden.title.toUpperCase();
+            currentPageId = 'home';
+            showView('editor');
+            loadPage(currentPageId);
+        }
+
+        function deleteGarden(id) {
+            if (confirm("Delete this site?")) { delete gardens[id]; saveToDisk(); renderDashboard(); }
+        }
+
+        function loadPage(id) {
+            saveCurrentPage(); // Save existing page content before switching to the new one
+            if (!currentGardenId || !gardens[currentGardenId]) return;
+            const page = gardens[currentGardenId].pages[id];
+            if(!page) return;
+            
+            currentPageId = id;
+            document.getElementById('page-content').innerHTML = page.content;
+            document.getElementById('main-title').innerText = page.name.toUpperCase();
+            document.getElementById('sub-title').innerText = page.subtitle || "Tell your story...";
+            document.getElementById('page-header').style.backgroundImage = page.headerImg ? `url(${page.headerImg})` : 'none';
+            
+            updateSiteNavigation();
+            renderPagesList();
+        }
+
+        function saveCurrentPage() {
+            if (!currentGardenId || !gardens[currentGardenId]) return;
+            const garden = gardens[currentGardenId];
+            const page = garden.pages[currentPageId];
+            if (!page) return;
+            
+            // Sync UI to Memory
+            page.content = document.getElementById('page-content').innerHTML;
+            const bg = document.getElementById('page-header').style.backgroundImage;
+            page.headerImg = bg && bg !== 'none' ? bg.slice(5, -2).replace(/"/g, "") : "";
+            page.name = document.getElementById('main-title').innerText;
+            page.subtitle = document.getElementById('sub-title').innerText;
+            garden.title = document.getElementById('site-title-input').value;
+            
+            // Persist
+            saveToDisk();
+        }
+
+        function updateSiteNavigation() {
+            if (!currentGardenId || !gardens[currentGardenId]) return;
+            const nav = document.getElementById('site-header-nav');
+            const pages = gardens[currentGardenId].pages;
+            nav.innerHTML = '';
+            Object.keys(pages).forEach(id => {
+                const link = document.createElement('span');
+                link.className = `nav-link-item ${id === currentPageId ? 'active font-black' : ''}`;
+                link.innerText = pages[id].name;
+                link.onclick = () => loadPage(id);
+                nav.appendChild(link);
+            });
+        }
+
+        function renderPagesList() {
+            if (!currentGardenId || !gardens[currentGardenId]) return;
+            const list = document.getElementById('pages-list');
+            const pages = gardens[currentGardenId].pages;
+            list.innerHTML = '';
+            Object.keys(pages).forEach(id => {
+                const item = document.createElement('div');
+                item.className = `flex items-center justify-between p-3 rounded-xl cursor-pointer ${id === currentPageId ? 'bg-emerald-50 text-emerald-600' : 'hover:bg-slate-50 text-slate-600'}`;
+                item.onclick = () => loadPage(id);
+                item.innerHTML = `
+                    <span class="text-xs font-bold">${pages[id].name}</span>
+                    ${id !== 'home' ? `<button onclick="event.stopPropagation(); deletePage('${id}')"><i class="fas fa-times opacity-30 hover:opacity-100"></i></button>` : ''}
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function createNewPage() {
+            if (!currentGardenId) return;
+            const id = 'p_' + Math.random().toString(36).substr(2, 6);
+            const name = prompt("Page Name:", "New Page");
+            if (!name) return;
+            gardens[currentGardenId].pages[id] = { name: name, subtitle: 'A new section of your site.', content: '', headerImg: '' };
+            saveToDisk();
+            loadPage(id);
+        }
+
+        function deletePage(id) {
+            if (!currentGardenId || id === 'home') return;
+            if (confirm("Delete this page?")) {
+                delete gardens[currentGardenId].pages[id];
+                saveToDisk();
+                loadPage('home');
+            }
+        }
+
+        function applyTemplate(type) {
+            if (!currentGardenId || !gardens[currentGardenId]) {
+                const id = 'g_' + Math.random().toString(36).substr(2, 9);
+                const title = type.charAt(0).toUpperCase() + type.slice(1) + ' Site';
+                gardens[id] = { title: title, pages: { 'home': { name: 'Home', subtitle: '', content: '', headerImg: '' } } };
+                currentGardenId = id;
+                saveToDisk();
+                openGarden(id);
+            }
+
+            const garden = gardens[currentGardenId];
+            if (type === 'portfolio') {
+                garden.pages['home'].name = "PORTFOLIO";
+                garden.pages['home'].subtitle = "Visual Designer & Photographer";
+                garden.pages['home'].content = `
+                    <div class="element-wrapper p-6"><h3 class="text-4xl font-black text-slate-800 tracking-tight">Selected Works</h3></div>
+                    <div class="element-wrapper p-6"><div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="p-8 bg-slate-50 rounded-[32px] border"><h4 class="font-bold mb-2">Photography</h4><p class="text-xs text-slate-500">Capturing moments in time.</p></div>
+                        <div class="p-8 bg-slate-50 rounded-[32px] border"><h4 class="font-bold mb-2">Design</h4><p class="text-xs text-slate-500">Visual storytelling systems.</p></div>
+                        <div class="p-8 bg-slate-50 rounded-[32px] border"><h4 class="font-bold mb-2">Writing</h4><p class="text-xs text-slate-500">Thoughts on the digital world.</p></div>
+                    </div></div>
+                `;
+            } else if (type === 'event') {
+                garden.pages['home'].name = "CONFERENCE 2024";
+                garden.pages['home'].subtitle = "Join us for a celebration of art and nature.";
+                garden.pages['home'].content = `
+                    <div class="element-wrapper p-6"><h3 class="text-4xl font-black text-slate-800 tracking-tight text-center">Save the Date</h3></div>
+                    <div class="element-wrapper p-6"><p class="text-slate-500 text-lg text-center">A weekend of workshops and keynote speakers at the Bloom Botanical Gardens.</p></div>
+                    <div class="element-wrapper p-6 flex justify-center"><a href="#" class="inline-block bg-emerald-600 text-white px-8 py-4 rounded-2xl font-bold">RSVP NOW</a></div>
+                `;
+            }
+            saveToDisk();
+            loadPage('home');
+            closeTemplatesModal();
+        }
+
+        function switchTab(tab) {
+            document.getElementById('panel-insert').classList.toggle('hidden', tab !== 'insert');
+            document.getElementById('panel-pages').classList.toggle('hidden', tab !== 'pages');
+            document.getElementById('tab-insert').className = `flex-1 py-5 text-xs font-black uppercase transition-all ${tab === 'insert' ? 'border-b-2 border-emerald-500 text-emerald-600' : 'text-slate-400'}`;
+            document.getElementById('tab-pages').className = `flex-1 py-5 text-xs font-black uppercase transition-all ${tab === 'pages' ? 'border-b-2 border-emerald-500 text-emerald-600' : 'text-slate-400'}`;
+        }
+
+        function setEmbedType(type) {
+            currentEmbedType = type;
+            const tabs = ['link', 'iframe', 'html'];
+            const descs = {
+                link: "Paste a URL (e.g., YouTube, Twitter) to create a preview card.",
+                iframe: "Paste an <iframe> tag to embed direct content.",
+                html: "Paste raw HTML/JS snippets to add custom widgets."
+            };
+            const placeholders = { link: "https://...", iframe: "<iframe ...></iframe>", html: "<div>Your HTML</div>" };
+            
+            tabs.forEach(t => {
+                const el = document.getElementById(`embed-tab-${t}`);
+                if(t === type) {
+                    el.className = "flex-1 py-3 rounded-xl text-xs font-black uppercase transition-all bg-white text-emerald-600 shadow-sm";
+                } else {
+                    el.className = "flex-1 py-3 rounded-xl text-xs font-black uppercase transition-all text-slate-400";
+                }
+            });
+            document.getElementById('embed-desc').innerText = descs[type];
+            document.getElementById('embedCodeInput').placeholder = placeholders[type];
+        }
+
+        function confirmAddEmbed() {
+            const val = document.getElementById('embedCodeInput').value.trim();
+            if(!val) return;
+            
+            const wrap = document.createElement('div');
+            wrap.className = 'element-wrapper p-6';
+            let inner = '';
+            
+            if(currentEmbedType === 'link') {
+                inner = `<div class="embed-container p-6 bg-slate-50 border-2 border-dashed flex flex-col items-center justify-center gap-2">
+                    <i class="fas fa-link text-slate-300 text-3xl"></i>
+                    <a href="${val}" target="_blank" class="text-blue-500 font-bold underline text-center">${val}</a>
+                </div>`;
+            } else {
+                inner = `<div class="embed-container overflow-hidden w-full">${val}</div>`;
+            }
+            
+            wrap.innerHTML = `<div class="element-controls"><button onclick="this.closest('.element-wrapper').remove(); autoSave();" class="w-10 h-10 bg-white border rounded-xl shadow-lg hover:text-red-500 flex items-center justify-center"><i class="fas fa-trash-alt"></i></button></div>${inner}`;
+            document.getElementById('page-content').appendChild(wrap);
+            autoSave();
+            closeEmbedModal();
+        }
+
+        window.addBlock = (type) => {
+            const container = document.getElementById('page-content');
+            const wrap = document.createElement('div');
+            wrap.className = 'element-wrapper p-6 group';
+            let inner = '';
+            switch(type) {
+                case 'title': inner = `<h3 contenteditable="true" class="text-4xl font-black text-slate-800 tracking-tight">New Heading</h3>`; break;
+                case 'text': inner = `<p contenteditable="true" class="text-slate-500 text-lg leading-relaxed">Describe your idea here.</p>`; break;
+                case 'button': inner = `<a href="#" contenteditable="true" class="inline-block bg-emerald-600 text-white px-8 py-4 rounded-2xl font-bold">Button</a>`; break;
+                case 'cards': inner = `<div class="grid grid-cols-1 md:grid-cols-3 gap-6">${[1,2,3].map(() => `<div class="p-8 bg-slate-50 rounded-[32px] border"><h4 class="font-bold mb-2" contenteditable="true">Title</h4><p class="text-xs text-slate-500" contenteditable="true">Content...</p></div>`).join('')}</div>`; break;
+            }
+            wrap.innerHTML = `<div class="element-controls"><button onclick="this.closest('.element-wrapper').remove(); autoSave();" class="w-10 h-10 bg-white border rounded-xl shadow-lg hover:text-red-500 flex items-center justify-center"><i class="fas fa-trash-alt"></i></button></div>${inner}`;
+            container.appendChild(wrap);
+            autoSave();
+        };
+
+        window.openEmbedModal = () => document.getElementById('embedModal').classList.remove('hidden');
+        window.closeEmbedModal = () => document.getElementById('embedModal').classList.add('hidden');
+        
+        window.togglePreview = (on) => { 
+            document.body.classList.toggle('preview-mode', on); 
+            document.querySelectorAll('[contenteditable]').forEach(el => el.contentEditable = !on); 
+            
+            // Sync buttons
+            const btnEdit = document.getElementById('btn-edit-mode');
+            const btnPrev = document.getElementById('btn-preview-mode');
+            if(on) {
+                btnEdit.className = "px-4 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-500 hover:text-slate-800";
+                btnPrev.className = "px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-white text-emerald-600 shadow-sm";
+            } else {
+                btnEdit.className = "px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-white text-emerald-600 shadow-sm";
+                btnPrev.className = "px-4 py-1.5 rounded-lg text-xs font-bold transition-all text-slate-500 hover:text-slate-800";
+            }
+        };
+
+        window.autoSave = () => { 
+            document.getElementById('save-indicator').style.opacity = "1"; 
+            clearTimeout(window.saveT); 
+            window.saveT = setTimeout(() => { 
+                saveCurrentPage(); 
+                document.getElementById('save-indicator').style.opacity = "0.4"; 
+            }, 500); // Faster autosave feedback
+        };
+
+        window.generateShareLink = () => { 
+            document.getElementById('share-url').value = window.location.href.split('?')[0] + "?siteId=" + currentGardenId; 
+            document.getElementById('shareModal').classList.remove('hidden'); 
+        };
+        window.closeShareModal = () => document.getElementById('shareModal').classList.add('hidden');
+        window.copyShareUrl = () => { document.getElementById('share-url').select(); document.execCommand('copy'); };
+        window.openTemplatesModal = () => document.getElementById('templatesModal').classList.remove('hidden');
+        window.closeTemplatesModal = () => document.getElementById('templatesModal').classList.add('hidden');
+        window.triggerImageUpload = (t) => { window.imgTarget = t; document.getElementById('imageInput').click(); };
+        
+        window.handleImageUpload = (e) => {
+            const f = e.target.files[0]; if(!f) return;
+            const r = new FileReader();
+            r.onload = (ev) => {
+                if(window.imgTarget === 'header') {
+                    document.getElementById('page-header').style.backgroundImage = `url(${ev.target.result})`;
+                } else {
+                    const w = document.createElement('div'); w.className = 'element-wrapper p-6';
+                    w.innerHTML = `<div class="element-controls"><button onclick="this.closest('.element-wrapper').remove(); autoSave();" class="w-10 h-10 bg-white border rounded-xl"><i class="fas fa-trash-alt"></i></button></div><img src="${ev.target.result}" class="rounded-[32px] w-full">`;
+                    document.getElementById('page-content').appendChild(w);
+                }
+                autoSave();
+            };
+            r.readAsDataURL(f);
+        };
+
+        window.onload = () => {
+            const params = new URLSearchParams(window.location.search);
+            const sId = params.get('siteId');
+            if (sId && gardens[sId]) { 
+                currentGardenId = sId; 
+                togglePreview(true); 
+                openGarden(sId); 
+            }
+            else if (currentGardenId && gardens[currentGardenId]) { 
+                openGarden(currentGardenId); 
+            }
+            else { 
+                renderDashboard(); 
+                showView('dashboard'); 
+            }
+        };
+    </script>
+</body>
+</html>
