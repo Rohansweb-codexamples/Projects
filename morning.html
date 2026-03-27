@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Morning Announcement Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='5' y='25' width='90' height='50' rx='5' fill='%231e1b4b'/%3E%3Ccircle cx='25' cy='50' r='18' fill='%23020617'/%3E%3Ccircle cx='75' cy='50' r='18' fill='%23020617'/%3E%3C/svg%3E">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        body { font-family: 'Inter', sans-serif; background: #0f172a; color: white; overflow-x: hidden; margin: 0; }
+        
+        .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        
+        @keyframes rotate-deck { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .spinning { animation: rotate-deck 3s linear infinite; transform-origin: center; animation-play-state: paused; }
+        @keyframes wave-bounce { 0%, 100% { height: 10px; } 50% { height: 30px; } }
+        .wave-bar { animation: wave-bounce 0.5s ease-in-out infinite; animation-play-state: paused; }
+
+        #presentation-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: linear-gradient(135deg, #1e1b4b 0%, #020617 100%);
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 2rem;
+            cursor: none;
+        }
+
+        #presentation-overlay:hover { cursor: default; }
+
+        .slide-content { animation: fadeIn 0.8s ease-out; width: 100%; max-width: 1400px; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+        
+        :fullscreen #presentation-overlay { display: flex !important; }
+    </style>
+</head>
+<body class="p-4 md:p-6">
+
+    <!-- MAIN CONTROL CENTER -->
+    <div id="control-center" class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <div class="lg:col-span-2 space-y-6">
+            <div class="glass p-6 md:p-8 rounded-3xl shadow-2xl">
+                <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
+                    <div>
+                        <h1 class="text-2xl md:text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-purple-400">
+                            Remote Control Dashboard
+                        </h1>
+                        <div class="flex items-center gap-2 mt-1">
+                            <span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Transmitting to External Screen</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="launchPresentation()" class="bg-indigo-600 hover:bg-indigo-500 px-6 py-3 rounded-xl font-bold transition-all shadow-lg flex items-center gap-2 text-sm md:text-base active:scale-95">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                            Launch HDMI Window
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Main Heading</label>
+                        <input type="text" id="input-title" oninput="syncPreview()" placeholder="E.g., MORNING ANNOUNCEMENTS" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 text-lg font-bold">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Sub-header</label>
+                        <input type="text" id="input-sub" oninput="syncPreview()" placeholder="E.g., Welcome to Tuesday, March 17th" class="w-full bg-white/5 border border-white/10 p-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Scrolling Content / Details</label>
+                        <textarea id="input-body" oninput="syncPreview()" rows="4" placeholder="Enter full announcement text here..." class="w-full bg-white/5 border border-white/10 p-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 custom-scrollbar"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mini Monitor -->
+            <div class="hidden md:block glass p-6 rounded-3xl opacity-60 border-dashed border-white/10">
+                 <p class="text-[10px] font-bold text-gray-500 mb-4 uppercase tracking-[0.2em]">Secondary Display Monitor</p>
+                 <div class="h-32 bg-black/40 rounded-xl flex flex-col items-center justify-center p-4 text-center border border-white/5">
+                    <h2 id="mini-title" class="text-lg font-bold truncate w-full text-indigo-200">...</h2>
+                    <p id="mini-sub" class="text-gray-400 text-xs truncate w-full">...</p>
+                 </div>
+            </div>
+        </div>
+
+        <div class="space-y-6">
+            <!-- Music Mixer -->
+            <div class="glass p-6 rounded-3xl flex flex-col items-center">
+                <div class="w-full mb-6 relative group">
+                    <svg viewBox="0 0 400 160" xmlns="http://www.w3.org/2000/svg" class="w-full h-auto">
+                        <rect x="20" y="40" width="360" height="100" rx="8" fill="#1e1b4b" />
+                        <circle cx="90" cy="90" r="35" fill="#111827" />
+                        <g class="spinning" id="left-vinyl"><circle cx="90" cy="90" r="10" fill="#6366f1" /></g>
+                        <circle cx="310" cy="90" r="35" fill="#111827" />
+                        <g class="spinning" id="right-vinyl"><circle cx="310" cy="90" r="10" fill="#a855f7" /></g>
+                        <g transform="translate(190, 60)">
+                            <rect class="wave-bar" x="0" y="0" width="4" height="15" fill="#22c55e" />
+                            <rect class="wave-bar" x="8" y="0" width="4" height="25" fill="#22c55e" style="animation-delay:0.1s" />
+                            <rect class="wave-bar" x="16" y="0" width="4" height="10" fill="#22c55e" style="animation-delay:0.2s" />
+                        </g>
+                    </svg>
+                    <div class="absolute inset-0 bg-indigo-600/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-3xl pointer-events-none"></div>
+                </div>
+
+                <div class="text-center mb-6 w-full">
+                    <h3 id="current-track-title" class="font-bold text-sm truncate text-indigo-300">Select Audio</h3>
+                    <div class="flex items-center justify-center gap-4 mt-4">
+                        <button id="prev-btn" class="text-gray-400 hover:text-white transition p-2"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg></button>
+                        <button id="play-btn" class="w-14 h-14 bg-white text-indigo-900 rounded-full flex items-center justify-center hover:bg-indigo-400 hover:text-white shadow-xl active:scale-90 transition-all">
+                            <svg id="play-icon" class="w-7 h-7 translate-x-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                            <svg id="pause-icon" class="w-7 h-7 hidden" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                        </button>
+                        <button id="next-btn" class="text-gray-400 hover:text-white transition p-2"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg></button>
+                    </div>
+                </div>
+
+                <div id="playlist" class="w-full space-y-1 max-h-48 overflow-y-auto custom-scrollbar pr-1"></div>
+            </div>
+
+            <!-- HDMI Workflow Box -->
+            <div class="bg-indigo-600/20 border border-indigo-500/30 p-6 rounded-3xl">
+                <h3 class="text-xs font-black text-indigo-400 uppercase mb-3 tracking-widest flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z"/></svg>
+                    Dual-Screen Setup
+                </h3>
+                <ul class="text-[11px] text-indigo-200/70 space-y-2 leading-relaxed">
+                    <li>1. Click <b>Launch HDMI Window</b> (opens new tab).</li>
+                    <li>2. Drag that tab to your <b>TV/Projector</b>.</li>
+                    <li>3. Tap "Start Presentation" on the TV to go <b>Full Screen</b>.</li>
+                    <li>4. <b>Stay on this dashboard</b> to keep editing while the TV stays full screen!</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- PRESENTATION UI (Only visible in secondary tab) -->
+    <div id="presentation-overlay">
+        <div id="fs-trigger" class="absolute inset-0 z-[1001] flex items-center justify-center bg-black/90 text-white cursor-pointer group" onclick="requestFullScreen()">
+            <div class="text-center group-active:scale-95 transition-transform">
+                <div class="w-24 h-24 bg-white text-indigo-900 rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl">
+                    <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
+                </div>
+                <p class="text-2xl font-black uppercase tracking-widest">Start Presentation</p>
+                <p class="text-sm text-gray-500 mt-2 font-medium">Click to lock Full Screen on this display</p>
+            </div>
+        </div>
+
+        <div class="slide-content">
+            <h1 id="pres-title" class="text-6xl md:text-[10rem] font-black mb-10 tracking-tighter uppercase leading-tight break-words">ANNOUNCEMENT</h1>
+            <div class="h-2 w-48 bg-gradient-to-r from-indigo-500 to-purple-500 mx-auto mb-12 rounded-full shadow-lg shadow-indigo-500/20"></div>
+            <h2 id="pres-sub" class="text-3xl md:text-6xl font-light text-indigo-300 mb-16 px-4">SUBHEADING</h2>
+            <p id="pres-body" class="text-xl md:text-3xl text-gray-400 leading-relaxed max-w-6xl mx-auto px-8 whitespace-pre-wrap font-medium"></p>
+        </div>
+
+        <!-- Music Tracker on External Display -->
+        <div id="ext-music-box" class="absolute bottom-12 left-12 flex items-center gap-5 bg-white/5 backdrop-blur-md p-5 rounded-3xl border border-white/10 shadow-2xl">
+            <div class="relative">
+                <div class="w-14 h-14 rounded-full bg-indigo-600 flex items-center justify-center animate-pulse">
+                    <svg class="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+                </div>
+                <div class="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-black"></div>
+            </div>
+            <div class="text-left">
+                <p class="text-[10px] uppercase font-black text-indigo-400 tracking-[0.3em] mb-1">Live Audio</p>
+                <p id="ext-track" class="text-xl font-bold text-white min-w-[150px]">Select Track</p>
+            </div>
+        </div>
+    </div>
+
+    <audio id="audio-player" crossorigin="anonymous"></audio>
+
+    <script>
+        const tracks = [
+            { id: 0, title: "Daybreak Energy", file: "https://rohansweb-codexamples.github.io/Calm-app/Neon_Dreams_Accelerate.mp3" },
+            { id: 1, title: "Focus Lo-fi", file: "https://rohansweb-codexamples.github.io/Calm-app/Neon_Dreams_Accelerate%20(1).mp3" },
+            { id: 2, title: "Deep Focus", file: "https://rohansweb-codexamples.github.io/Calm-app/Neon_Dreams_Accelerate%20(2).mp3" },
+            { id: 3, title: "Assembly Theme", file: "https://rohansweb-codexamples.github.io/Calm-app/Neon_Dreams_Accelerate%20(Extended).mp3" }
+        ];
+
+        let currentTrackIndex = 0;
+        let isPlaying = false;
+        const audio = document.getElementById('audio-player');
+        const playBtn = document.getElementById('play-btn');
+        const playlistContainer = document.getElementById('playlist');
+
+        function init() {
+            playlistContainer.innerHTML = '';
+            tracks.forEach((t, i) => {
+                const div = document.createElement('div');
+                div.className = "group p-3 rounded-xl hover:bg-indigo-500/20 cursor-pointer text-xs flex items-center justify-between transition-all border border-transparent hover:border-white/10 mb-1";
+                div.innerHTML = `<span class="group-hover:text-white font-medium text-gray-400">${t.title}</span> <svg class="w-4 h-4 opacity-0 group-hover:opacity-100 text-indigo-400" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>`;
+                div.onclick = () => loadTrack(i, true);
+                playlistContainer.appendChild(div);
+            });
+
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('mode') === 'present') {
+                setupPresentationMode();
+            }
+
+            // CROSS-TAB COMMUNICATION
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'announcement_sync') {
+                    renderPresentation(JSON.parse(e.newValue));
+                }
+            });
+
+            syncPreview();
+            loadTrack(0, false);
+        }
+
+        function syncPreview() {
+            const payload = {
+                title: document.getElementById('input-title')?.value || "ANNOUNCEMENT",
+                sub: document.getElementById('input-sub')?.value || "WELCOME BACK",
+                body: document.getElementById('input-body')?.value || "Real-time updates will appear here as the presenter types on their dashboard.",
+                track: tracks[currentTrackIndex].title
+            };
+
+            const mt = document.getElementById('mini-title');
+            const ms = document.getElementById('mini-sub');
+            if (mt) mt.innerText = payload.title;
+            if (ms) ms.innerText = payload.sub;
+
+            // Broadcast to the other tab
+            localStorage.setItem('announcement_sync', JSON.stringify(payload));
+        }
+
+        function launchPresentation() {
+            const url = window.location.href.split('?')[0] + "?mode=present";
+            window.open(url, '_blank');
+        }
+
+        function setupPresentationMode() {
+            document.getElementById('control-center').remove();
+            const overlay = document.getElementById('presentation-overlay');
+            overlay.style.display = 'flex';
+            
+            const saved = localStorage.getItem('announcement_sync');
+            if (saved) renderPresentation(JSON.parse(saved));
+        }
+
+        function renderPresentation(data) {
+            const t = document.getElementById('pres-title');
+            const s = document.getElementById('pres-sub');
+            const b = document.getElementById('pres-body');
+            const et = document.getElementById('ext-track');
+            
+            if(t) t.innerText = data.title;
+            if(s) s.innerText = data.sub;
+            if(b) b.innerText = data.body;
+            if(et) et.innerText = data.track;
+        }
+
+        function requestFullScreen() {
+            const elem = document.documentElement;
+            const trigger = document.getElementById('fs-trigger');
+            const fsMethod = elem.requestFullscreen || elem.webkitRequestFullscreen || elem.msRequestFullscreen;
+            
+            if (fsMethod) {
+                fsMethod.call(elem).then(() => {
+                    trigger.style.display = 'none';
+                }).catch(() => {
+                    trigger.style.display = 'none';
+                });
+            } else {
+                trigger.style.display = 'none';
+            }
+        }
+
+        // AUDIO ENGINE
+        function loadTrack(index, autoPlay) {
+            currentTrackIndex = index;
+            audio.src = tracks[index].file;
+            document.getElementById('current-track-title').innerText = tracks[index].title;
+            if (autoPlay) playTrack();
+            syncPreview();
+        }
+
+        function playTrack() {
+            audio.play().then(() => {
+                isPlaying = true;
+                document.getElementById('play-icon').classList.add('hidden');
+                document.getElementById('pause-icon').classList.remove('hidden');
+                toggleAnimations(true);
+            }).catch(e => console.log("Interacted needed for audio"));
+        }
+
+        function pauseTrack() {
+            audio.pause();
+            isPlaying = false;
+            document.getElementById('play-icon').classList.remove('hidden');
+            document.getElementById('pause-icon').classList.add('hidden');
+            toggleAnimations(false);
+        }
+
+        function toggleAnimations(on) {
+            const state = on ? 'running' : 'paused';
+            document.querySelectorAll('.spinning, .wave-bar').forEach(el => el.style.animationPlayState = state);
+        }
+
+        playBtn.addEventListener('click', () => isPlaying ? pauseTrack() : playTrack());
+        document.getElementById('prev-btn').addEventListener('click', () => loadTrack((currentTrackIndex - 1 + tracks.length) % tracks.length, true));
+        document.getElementById('next-btn').addEventListener('click', () => loadTrack((currentTrackIndex + 1) % tracks.length, true));
+        audio.onended = () => document.getElementById('next-btn').click();
+
+        window.onload = init;
+    </script>
+</body>
+</html>
