@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rohan's Web Colour Explorer</title>
+    
+    <!-- External Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chroma-js/2.4.2/chroma.min.js"></script>
+    
+    <!-- Google Fonts & Icons -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --font-main: 'Plus Jakarta Sans', sans-serif;
+            --header-height: 80px;
+            --transition-smooth: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            --primary-bg: #ffffff;
+            --card-shadow: 0 20px 50px rgba(0,0,0,0.05);
+            --accent: #6366f1;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--primary-bg);
+            color: #0f172a;
+            overflow-x: hidden;
+        }
+
+        .material-symbols-rounded {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            height: var(--header-height);
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 6%;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(0,0,0,0.03);
+        }
+
+        .logo {
+            font-weight: 800;
+            font-size: 1.4rem;
+            color: #000;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            letter-spacing: -0.5px;
+        }
+
+        .logo span { color: var(--accent); }
+
+        .nav-links { display: flex; align-items: center; }
+        .nav-links a {
+            text-decoration: none;
+            color: #64748b;
+            margin-left: 2.5rem;
+            font-weight: 600;
+            transition: var(--transition-smooth);
+            font-size: 0.95rem;
+        }
+
+        .nav-links a:hover { color: #000; transform: translateY(-1px); }
+
+        /* Generator Section */
+        #generator {
+            height: 100vh;
+            display: flex;
+            padding-top: var(--header-height);
+            background: #fff;
+        }
+
+        .color-col {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: flex 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+            /* FIX: Ensure no background filters are ever applied */
+            background-blend-mode: normal !important;
+            filter: none !important;
+            opacity: 1 !important;
+        }
+
+        .color-col:hover { flex: 1.6; }
+
+        .hex-code {
+            font-size: 2.4rem;
+            font-weight: 800;
+            margin-bottom: 2.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            padding: 12px 24px;
+            border-radius: 16px;
+            transition: var(--transition-smooth);
+        }
+
+        .hex-code:hover { background: rgba(0,0,0,0.08); transform: scale(1.05); }
+
+        .col-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            opacity: 0;
+            transform: translateY(40px);
+            transition: var(--transition-smooth);
+        }
+
+        .color-col:hover .col-actions {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .action-btn {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            width: 60px;
+            height: 60px;
+            border-radius: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            backdrop-filter: blur(12px);
+            transition: var(--transition-smooth);
+            color: inherit;
+        }
+
+        .action-btn:hover { background: rgba(255,255,255,0.4); transform: scale(1.15) rotate(5deg); }
+        .action-btn.active { 
+            background: #fff !important; 
+            color: #000 !important; 
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        }
+
+        /* Floating Controls */
+        .controls-container {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 1rem;
+            z-index: 100;
+        }
+
+        .main-btn {
+            padding: 1rem 1.8rem;
+            background: #000;
+            color: #fff;
+            border: none;
+            border-radius: 20px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            transition: var(--transition-smooth);
+            font-size: 0.95rem;
+            white-space: nowrap;
+        }
+
+        .main-btn:hover { transform: translateY(-6px); box-shadow: 0 30px 60px rgba(0,0,0,0.25); }
+        .btn-secondary { background: #fff; color: #000; }
+        .btn-accent { background: var(--accent); color: #fff; }
+
+        /* Auth Overlay */
+        #authOverlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(15px);
+            z-index: 5000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .auth-box {
+            background: #fff;
+            padding: 3rem;
+            border-radius: 40px;
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+            box-shadow: 0 30px 100px rgba(0,0,0,0.4);
+        }
+        .auth-box h2 { font-size: 2rem; margin-bottom: 0.5rem; letter-spacing: -1px; }
+        .auth-box input {
+            width: 100%;
+            padding: 1.2rem;
+            margin: 0.5rem 0;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            font-family: inherit;
+            outline: none;
+            font-size: 1rem;
+        }
+        .auth-box input:focus { border-color: var(--accent); }
+
+        /* Account Sidebar */
+        #accountSidebar {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 400px;
+            height: 100vh;
+            background: #fff;
+            z-index: 4000;
+            transform: translateX(100%);
+            transition: var(--transition-smooth);
+            box-shadow: -20px 0 60px rgba(0,0,0,0.05);
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+        }
+        #accountSidebar.open { transform: translateX(0); }
+        .sidebar-header { margin-bottom: 30px; }
+        .palette-list { flex: 1; overflow-y: auto; padding-right: 5px; }
+        .palette-item {
+            background: #f8fafc;
+            border-radius: 24px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid #eee;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+        .palette-item:hover { border-color: var(--accent); transform: scale(1.02); }
+        .mini-strip { display: flex; height: 45px; border-radius: 12px; overflow: hidden; margin-bottom: 10px; }
+        .mini-strip div { flex: 1; }
+
+        /* Explorer Section */
+        #explorer { padding: 150px 8%; background: #ffffff; }
+        .section-header { text-align: center; margin-bottom: 4rem; }
+        .section-header h2 { font-size: 4.5rem; font-weight: 800; letter-spacing: -3px; margin-bottom: 1.5rem; }
+        .section-header p { font-size: 1.2rem; color: #64748b; font-weight: 500; margin-bottom: 3rem; }
+
+        /* Filter Chips */
+        .filter-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 3rem;
+        }
+
+        .filter-chip {
+            padding: 10px 24px;
+            border-radius: 100px;
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: #64748b;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+
+        .filter-chip.active {
+            background: #000;
+            color: #fff;
+            border-color: #000;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .search-bar { max-width: 700px; margin: 0 auto; position: relative; }
+        .search-bar input {
+            width: 100%;
+            padding: 1.8rem 2.5rem;
+            border-radius: 30px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            font-size: 1.2rem;
+            font-family: var(--font-main);
+            outline: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.02);
+            transition: var(--transition-smooth);
+        }
+        .search-bar input:focus { border-color: var(--accent); box-shadow: 0 20px 50px rgba(99, 102, 241, 0.1); transform: translateY(-2px); }
+
+        .download-action {
+            margin-top: 3rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 3rem;
+            margin-top: 4rem;
+        }
+
+        .color-card {
+            background: #fff;
+            border-radius: 40px;
+            padding: 15px;
+            box-shadow: var(--card-shadow);
+            transition: var(--transition-smooth);
+            cursor: pointer;
+            border: 1px solid #f1f5f9;
+            opacity: 1 !important;
+        }
+        .color-card:hover { transform: translateY(-20px); box-shadow: 0 40px 80px rgba(0,0,0,0.08); border-color: #e2e8f0; }
+
+        .preview { 
+            height: 220px; 
+            border-radius: 30px; 
+            position: relative; 
+            overflow: hidden; 
+            border: 1px solid rgba(0,0,0,0.05);
+            /* FIX: Ensure no background filters are ever applied */
+            background-blend-mode: normal !important;
+            filter: none !important;
+        }
+        
+        .preview-overlay {
+            position: absolute;
+            inset: 0;
+            background: transparent;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            color: #fff;
+            font-weight: 800;
+            transition: var(--transition-smooth);
+        }
+        
+        .preview:hover .preview-overlay { 
+            opacity: 1; 
+            background: rgba(255,255,255,0.1); 
+        }
+
+        .card-info { padding: 2.5rem 1.5rem; text-align: left; }
+        .card-info h3 { font-size: 1.1rem; color: #1e293b; margin-bottom: 0.5rem; opacity: 0.6; font-weight: 500; }
+        .card-info p { font-weight: 800; font-size: 1.6rem; color: #0f172a; letter-spacing: -0.5px; }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 50px;
+            right: 50px;
+            background: #000;
+            color: #fff;
+            padding: 1.5rem 3rem;
+            border-radius: 24px;
+            font-weight: 700;
+            transform: translateY(200%);
+            transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 5000;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .toast.show { transform: translateY(0); }
+
+        @media (max-width: 900px) {
+            #generator { flex-direction: column; }
+            .color-col { width: 100%; height: 16vh; }
+            .hex-code { font-size: 1.6rem; margin-bottom: 0; }
+            .col-actions { flex-direction: row; opacity: 1; transform: none; margin-top: 15px; }
+            .action-btn { width: 45px; height: 45px; border-radius: 14px; }
+            .controls-container { bottom: 20px; flex-direction: column; width: 85%; }
+            .main-btn { justify-content: center; width: 100%; }
+            #accountSidebar { width: 100%; }
+            .section-header h2 { font-size: 3rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Auth Overlay -->
+    <div id="authOverlay">
+        <div class="auth-box">
+            <h2 id="authTitle">Rohan Render</h2>
+            <p id="authDesc" style="margin-bottom:20px; color:#64748b;">Global Cloud Login</p>
+            <div id="signupOnly" style="display:none"><input type="text" id="email" placeholder="Email Address"></div>
+            <input type="text" id="username" placeholder="Username">
+            <input type="password" id="password" placeholder="Password">
+            <button class="main-btn" style="width:100%; margin-top:20px; justify-content:center" onclick="handleAuth()">Access Cloud</button>
+            <p style="margin-top:20px; font-size:0.9rem; color:#64748b; cursor:pointer" onclick="toggleAuth()">Create an account or login</p>
+        </div>
+    </div>
+
+    <nav>
+        <a href="#" class="logo">
+            <span class="material-symbols-rounded">palette</span>
+            ROHAN'S WEB <span>Colour EXPLORER</span>
+        </a>
+        <div class="nav-links">
+            <a href="#generator">Generator</a>
+            <a href="#explorer">Explorer</a>
+            <a href="javascript:void(0)" onclick="toggleSidebar()" style="color:var(--accent)">Vault</a>
+        </div>
+    </nav>
+
+    <div id="accountSidebar">
+        <div class="sidebar-header">
+            <div style="display:flex; justify-content:space-between; align-items:center">
+                <h3>Cloud Vault</h3>
+                <span class="material-symbols-rounded" style="cursor:pointer" onclick="toggleSidebar()">close</span>
+            </div>
+            <p id="handle" style="color:#64748b; font-weight:600; margin-top:5px;">@user</p>
+        </div>
+        <div class="palette-list" id="myPalettes">
+            <!-- Saved palettes here -->
+        </div>
+        <button class="main-btn btn-secondary" style="width:100%; margin-top:20px" onclick="location.reload()">
+            <span class="material-symbols-rounded">logout</span> Sign Out
+        </button>
+    </div>
+
+    <div id="toast" class="toast">
+        <span class="material-symbols-rounded">check_circle</span>
+        Copied to Clipboard!
+    </div>
+
+    <!-- Hidden Export Canvas -->
+    <canvas id="exportCanvas" style="display:none;"></canvas>
+
+    <section id="generator">
+        <div class="controls-container">
+            <button class="main-btn" onclick="generateRandomPalette()" id="genBtn">
+                <span class="material-symbols-rounded">refresh</span> Generate
+            </button>
+            <button class="main-btn btn-accent" onclick="saveToCloud()">
+                <span class="material-symbols-rounded">cloud_upload</span> Save to Vault
+            </button>
+            <button class="main-btn btn-secondary" onclick="exportPaletteImage()">
+                <span class="material-symbols-rounded">download</span> Download Image
+            </button>
+        </div>
+    </section>
+
+    <section id="explorer">
+        <div class="section-header">
+            <h2>Infinite Inspiration</h2>
+            <p>Discover hand-picked palettes and 80+ curated colors for modern digital experiences.</p>
+            
+            <div class="filter-container" id="filterChips">
+                <button class="filter-chip active" data-cat="all">All Colors</button>
+                <button class="filter-chip" data-cat="red">Reds</button>
+                <button class="filter-chip" data-cat="yellow">Yellows</button>
+                <button class="filter-chip" data-cat="blue">Blues</button>
+                <button class="filter-chip" data-cat="green">Greens</button>
+                <button class="filter-chip" data-cat="purple">Purples</button>
+                <button class="filter-chip" data-cat="orange">Oranges</button>
+                <button class="filter-chip" data-cat="pink">Pinks</button>
+                <button class="filter-chip" data-cat="gray">Neutrals</button>
+            </div>
+
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="Search by name, mood, or hex code...">
+            </div>
+
+            <div class="download-action">
+                <button class="main-btn btn-secondary" onclick="exportExplorerResults()">
+                    <span class="material-symbols-rounded">file_download</span> Download These Results
+                </button>
+            </div>
+        </div>
+
+        <div class="color-grid" id="colorGrid"></div>
+    </section>
+
+    <script>
+        gsap.registerPlugin(ScrollTrigger);
+
+        const generator = document.getElementById('generator');
+        const colorGrid = document.getElementById('colorGrid');
+        const searchInput = document.getElementById('searchInput');
+        const toast = document.getElementById('toast');
+        
+        // Render Server Config
+        const BASE_URL = "https://rohans-web-colour-picker-server.onrender.com";
+        let currentUser = null;
+        let isSignup = false;
+
+        let palette = [];
+        const COL_COUNT = 5;
+
+        const colorDatabase = [
+            { name: "Pure Red", hex: "#FF0000", cat: "red" }, { name: "Crimson", hex: "#DC143C", cat: "red" }, { name: "Firebrick", hex: "#B22222", cat: "red" }, { name: "Salmon", hex: "#FA8072", cat: "red" }, { name: "Scarlet", hex: "#FF2400", cat: "red" }, { name: "Ruby", hex: "#E0115F", cat: "red" }, { name: "Cherry", hex: "#D2042D", cat: "red" }, { name: "Blood Orange", hex: "#D1001C", cat: "red" },
+            { name: "Neon Yellow", hex: "#FFFF00", cat: "yellow" }, { name: "Gold", hex: "#FFD700", cat: "yellow" }, { name: "Amber", hex: "#FFBF00", cat: "yellow" }, { name: "Saffron", hex: "#F4C430", cat: "yellow" }, { name: "Mustard", hex: "#FFDB58", cat: "yellow" }, { name: "Citrine", hex: "#E4D00A", cat: "yellow" }, { name: "Cyber Yellow", hex: "#FFD300", cat: "yellow" }, { name: "Sunray", hex: "#E3A857", cat: "yellow" },
+            { name: "Electric Blue", hex: "#0000FF", cat: "blue" }, { name: "Royal Blue", hex: "#4169E1", cat: "blue" }, { name: "Sky Blue", hex: "#87CEEB", cat: "blue" }, { name: "Midnight Blue", hex: "#191970", cat: "blue" }, { name: "Navy", hex: "#000080", cat: "blue" }, { name: "Dodger Blue", hex: "#1E90FF", cat: "blue" }, { name: "Cobalt", hex: "#0047AB", cat: "blue" }, { name: "Cyan", hex: "#00FFFF", cat: "blue" },
+            { name: "Pure Green", hex: "#00FF00", cat: "green" }, { name: "Forest Green", hex: "#228B22", cat: "green" }, { name: "Lime Green", hex: "#32CD32", cat: "green" }, { name: "Emerald", hex: "#50C878", cat: "green" }, { name: "Teal", hex: "#008080", cat: "green" }, { name: "Jade", hex: "#00A36C", cat: "green" }, { name: "Mint", hex: "#3EB489", cat: "green" }, { name: "Kelly Green", hex: "#4CBB17", cat: "green" },
+            { name: "Vivid Purple", hex: "#9F00FF", cat: "purple" }, { name: "Indigo", hex: "#4B0082", cat: "purple" }, { name: "Lavender", hex: "#E6E6FA", cat: "purple" }, { name: "Amethyst", hex: "#9966CC", cat: "purple" }, { name: "Violet", hex: "#8F00FF", cat: "purple" }, { name: "Magenta", hex: "#FF00FF", cat: "purple" }, { name: "Mulberry", hex: "#C54B8C", cat: "purple" }, { name: "Wisteria", hex: "#C9A0DC", cat: "purple" },
+            { name: "Bright Orange", hex: "#FF7F00", cat: "orange" }, { name: "Dark Orange", hex: "#FF8C00", cat: "orange" }, { name: "Coral", hex: "#FF7F50", cat: "orange" }, { name: "Tangerine", hex: "#F28500", cat: "orange" }, { name: "Burnt Orange", hex: "#CC5500", cat: "orange" }, { name: "Marigold", hex: "#EAA221", cat: "orange" }, { name: "Persimmon", hex: "#EC5800", cat: "orange" }, { name: "Pumpkin", hex: "#FF7518", cat: "orange" },
+            { name: "Hot Pink", hex: "#FF69B4", cat: "pink" }, { name: "Deep Pink", hex: "#FF1493", cat: "pink" }, { name: "Rose", hex: "#FF007F", cat: "pink" }, { name: "Flamingo", hex: "#FC8EAC", cat: "pink" }, { name: "Blush", hex: "#DE5D83", cat: "pink" }, { name: "Bubblegum", hex: "#FFC1CC", cat: "pink" }, { name: "Punch", hex: "#F25278", cat: "pink" }, { name: "Fuchsia", hex: "#FF00FF", cat: "pink" },
+            { name: "Slate Gray", hex: "#708090", cat: "gray" }, { name: "Silver", hex: "#C0C0C0", cat: "gray" }, { name: "Charcoal", hex: "#36454F", cat: "gray" }, { name: "Jet", hex: "#343434", cat: "gray" }, { name: "Ash", hex: "#B2BEB5", cat: "gray" }, { name: "Stone", hex: "#877F7D", cat: "gray" }, { name: "Steel", hex: "#778899", cat: "gray" }, { name: "Gunmetal", hex: "#2A3439", cat: "gray" }
+        ];
+
+        let activeCategory = "all";
+
+        function toggleAuth() {
+            isSignup = !isSignup;
+            document.getElementById('signupOnly').style.display = isSignup ? 'block' : 'none';
+            document.getElementById('authTitle').innerText = isSignup ? "Create Account" : "Rohan Render";
+        }
+
+        async function handleAuth() {
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+            const email = document.getElementById('email').value;
+            const endpoint = isSignup ? '/api/auth/signup' : '/api/auth/login';
+
+            try {
+                const res = await fetch(`${BASE_URL}${endpoint}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: user, password: pass, email })
+                });
+                const data = await res.json();
+                if (data.error) throw new Error(data.error);
+                
+                currentUser = data.username;
+                document.getElementById('authOverlay').style.display = 'none';
+                document.getElementById('handle').innerText = `@${currentUser}`;
+                showToast("Connected to Server");
+                refreshAccount();
+            } catch (e) { alert(e.message); }
+        }
+
+        async function refreshAccount() {
+            if(!currentUser) return;
+            const res = await fetch(`${BASE_URL}/api/palettes/user/${currentUser}`);
+            const palettes = await res.json();
+            const list = document.getElementById('myPalettes');
+            list.innerHTML = palettes.map(p => `
+                <div class="palette-item" onclick="loadFullPalette([${p.colors.map(c=>`'${c}'`).join(',')}])">
+                    <div class="mini-strip">${p.colors.map(c=>`<div style="background:${c}"></div>`).join('')}</div>
+                    <div style="font-size:0.75rem; font-weight:800; display:flex; justify-content:space-between">
+                        <span>PALETTE</span>
+                        <span style="color:var(--accent)">OPEN</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function loadFullPalette(colors) {
+            palette = colors.map(c => ({ hex: c, locked: false }));
+            renderPalette();
+            toggleSidebar();
+            showToast("Palette Loaded");
+        }
+
+        async function saveToCloud() {
+            if(!currentUser) return toggleSidebar();
+            const hexes = palette.map(p => p.hex);
+            await fetch(`${BASE_URL}/api/palettes/save`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: currentUser, colors: hexes })
+            });
+            showToast("Saved to Cloud");
+            refreshAccount();
+        }
+
+        function initPalette() {
+            palette = [];
+            for(let i=0; i<COL_COUNT; i++) {
+                palette.push({ hex: chroma.random().saturate(2).hex(), locked: false });
+            }
+            renderPalette();
+        }
+
+        function createCol(colorObj, index) {
+            const hex = colorObj.hex;
+            const col = document.createElement('div');
+            col.className = 'color-col';
+            col.style.backgroundColor = hex;
+            
+            const lum = chroma(hex).luminance();
+            const textColor = lum < 0.45 ? '#ffffff' : '#000000';
+
+            col.innerHTML = `
+                <div class="hex-code" style="color: ${textColor}">${hex}</div>
+                <div class="col-actions">
+                    <button class="action-btn ${colorObj.locked ? 'active' : ''}" 
+                            style="color: ${textColor}" 
+                            onclick="toggleLock(${index}, event)">
+                        <span class="material-symbols-rounded">${colorObj.locked ? 'lock' : 'lock_open'}</span>
+                    </button>
+                    <button class="action-btn" style="color: ${textColor}" onclick="copyToClipboard('${hex}')">
+                        <span class="material-symbols-rounded">content_copy</span>
+                    </button>
+                </div>
+            `;
+            return col;
+        }
+
+        function generateRandomPalette() {
+            palette = palette.map(color => {
+                if (color.locked) return color;
+                return { hex: chroma.random().saturate(2).hex(), locked: false };
+            });
+            renderPalette();
+        }
+
+        function renderPalette() {
+            const controls = generator.querySelector('.controls-container');
+            generator.innerHTML = '';
+            palette.forEach((color, i) => {
+                generator.appendChild(createCol(color, i));
+            });
+            generator.appendChild(controls);
+
+            // FIX: Removed clearProps: "all" which was deleting the background-color style after animation
+            gsap.fromTo('.color-col', 
+                { opacity: 0, y: 30 },
+                {
+                    opacity: 1,
+                    y: 0,
+                    duration: 0.5,
+                    stagger: 0.05,
+                    ease: "power2.out"
+                }
+            );
+        }
+
+        function toggleLock(index, e) {
+            e.stopPropagation();
+            palette[index].locked = !palette[index].locked;
+            const btn = e.currentTarget;
+            btn.classList.toggle('active');
+            btn.querySelector('.material-symbols-rounded').innerText = palette[index].locked ? 'lock' : 'lock_open';
+        }
+
+        function exportPaletteImage() {
+            const canvas = document.getElementById('exportCanvas');
+            const ctx = canvas.getContext('2d');
+            const hexes = palette.map(p => p.hex);
+            
+            canvas.width = 1200;
+            canvas.height = 630;
+
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0,0, canvas.width, canvas.height);
+
+            const colWidth = canvas.width / hexes.length;
+            hexes.forEach((hex, i) => {
+                ctx.fillStyle = hex;
+                ctx.fillRect(i * colWidth, 0, colWidth, canvas.height - 150);
+                
+                ctx.fillStyle = chroma(hex).luminance() > 0.45 ? '#000000' : '#ffffff';
+                ctx.font = 'bold 32px Plus Jakarta Sans';
+                ctx.textAlign = 'center';
+                ctx.fillText(hex.toUpperCase(), (i * colWidth) + (colWidth/2), (canvas.height - 150)/2);
+            });
+
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, canvas.height - 150, canvas.width, 150);
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 40px Plus Jakarta Sans';
+            ctx.textAlign = 'left';
+            ctx.fillText("ROHAN'S WEB COLOUR EXPLORER", 60, canvas.height - 65);
+
+            const link = document.createElement('a');
+            link.download = `palette-${Date.now()}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+            showToast("Palette Image Exported");
+        }
+
+        function renderExplorer(query = '') {
+            colorGrid.innerHTML = '';
+            
+            const filtered = colorDatabase.filter(c => {
+                const matchesCat = activeCategory === 'all' || c.cat === activeCategory;
+                const matchesSearch = c.name.toLowerCase().includes(query.toLowerCase()) || 
+                                    c.hex.toLowerCase().includes(query.toLowerCase());
+                return matchesCat && matchesSearch;
+            });
+
+            filtered.forEach(color => {
+                const card = document.createElement('div');
+                card.className = 'color-card';
+                card.onclick = () => copyToClipboard(color.hex);
+                
+                const textColor = chroma(color.hex).luminance() < 0.45 ? '#ffffff' : '#000000';
+
+                card.innerHTML = `
+                    <div class="preview" style="background-color: ${color.hex}">
+                        <div class="preview-overlay" style="color: ${textColor}">COPY HEX</div>
+                    </div>
+                    <div class="card-info">
+                        <h3>${color.name}</h3>
+                        <p>${color.hex.toUpperCase()}</p>
+                    </div>
+                `;
+                colorGrid.appendChild(card);
+            });
+
+            if(filtered.length > 0) {
+                gsap.fromTo(".color-card", 
+                    { opacity: 0, y: 20 },
+                    { 
+                        opacity: 1, 
+                        y: 0, 
+                        duration: 0.4, 
+                        stagger: 0.02, 
+                        ease: "power1.out"
+                    }
+                );
+            }
+        }
+
+        function exportExplorerResults() {
+            const canvas = document.getElementById('exportCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            const results = colorDatabase.filter(c => {
+                const matchesCat = activeCategory === 'all' || c.cat === activeCategory;
+                return matchesCat;
+            }).slice(0, 50);
+
+            if(results.length === 0) return;
+
+            const cols = 5;
+            const rows = Math.ceil(results.length / cols);
+            const size = 250;
+            canvas.width = cols * size;
+            canvas.height = rows * size + 200;
+
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0,0, canvas.width, canvas.height);
+
+            results.forEach((c, i) => {
+                const col = i % cols;
+                const row = Math.floor(i / cols);
+                ctx.fillStyle = c.hex;
+                ctx.fillRect(col * size, row * size, size, size);
+                
+                ctx.fillStyle = chroma(c.hex).luminance() > 0.45 ? 'rgba(0,0,0,0.8)' : 'rgba(255,255,255,0.8)';
+                ctx.font = 'bold 20px Plus Jakarta Sans';
+                ctx.fillText(c.name, col * size + 20, row * size + 40);
+                ctx.font = '16px monospace';
+                ctx.fillText(c.hex.toUpperCase(), col * size + 20, row * size + 65);
+            });
+
+            const link = document.createElement('a');
+            link.download = `explorer-export-${activeCategory}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        document.querySelectorAll('.filter-chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+                activeCategory = chip.dataset.cat;
+                renderExplorer(searchInput.value);
+            });
+        });
+
+        function copyToClipboard(text) {
+            const el = document.createElement('textarea');
+            el.value = text;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            showToast(`Copied: ${text.toUpperCase()}`);
+        }
+
+        function toggleSidebar() { document.getElementById('accountSidebar').classList.toggle('open'); }
+        function showToast(m) { 
+            toast.innerHTML = `<span class="material-symbols-rounded">check_circle</span> ${m}`;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000); 
+        }
+
+        searchInput.addEventListener('input', (e) => renderExplorer(e.target.value));
+
+        initPalette();
+        renderExplorer();
+
+        gsap.from("nav", { y: -100, opacity: 1, duration: 0.8, ease: "power2.out" });
+
+    </script>
+</body>
+</html>
