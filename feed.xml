@@ -1,43 +1,75 @@
 <?xml version="1.0" encoding="UTF-8" ?>
+<?xml-stylesheet type="text/xsl" href="style.xsl"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2002/Atom">
 <channel>
-    <title>Rohan's Web</title>
+    <title>Rohan's Web - Official Feed</title>
     <link>http://www.rohansweb.co.uk</link>
-    <description>Latest updates, apps, and projects from Rohan's Web including RohanOS and Game Hub.</description>
+    <description>The ultimate hub for RohanOS, Game Hub, Coding, and Creativity.</description>
     <language>en-gb</language>
-    <lastBuildDate>Fri, 03 Apr 2026 11:08:00 GMT</lastBuildDate>
+    <lastBuildDate>Fri, 03 Apr 2026 11:20:00 GMT</lastBuildDate>
     <atom:link href="http://www.rohansweb.co.uk/feed.xml" rel="self" type="application/rss+xml" />
 
     <item>
-        <title>New Video Update</title>
-        <link>http://www.rohansweb.co.uk</link>
-        <description>A new video has been posted to the Rohan's Web blog. Tap to view the latest content!</description>
-        <pubDate>Tue, 08 Jul 2025 00:00:00 GMT</pubDate>
-        <guid>http://www.rohansweb.co.uk/#video-july-2025</guid>
+        <title>New in Game Hub: Level Up Your Fruit Friend!</title>
+        <link>http://www.rohansweb.co.uk/game-hub</link>
+        <description>Explore the NEW Game Hub. Play games, earn points, and evolve your fruit companion. Watch the latest video tour on the site!</description>
+        <category>Games</category>
+        <pubDate>Fri, 03 Apr 2026 10:00:00 GMT</pubDate>
+        <guid>http://www.rohansweb.co.uk/game-hub-v2</guid>
     </item>
 
     <item>
-        <title>Explore the NEW Game Hub</title>
-        <link>http://www.rohansweb.co.uk</link>
-        <description>Play lots of fun games and earn points. Level up your fruit friend as you play!</description>
-        <pubDate>Fri, 03 Apr 2026 00:00:00 GMT</pubDate>
-        <guid>http://www.rohansweb.co.uk/game-hub</guid>
+        <title>RohanOS Download Available</title>
+        <link>http://www.rohansweb.co.uk/rohanos</link>
+        <description>The latest build of RohanOS is ready. Download the operating system project and test the new interface features.</description>
+        <category>Software</category>
+        <pubDate>Thu, 02 Apr 2026 15:00:00 GMT</pubDate>
+        <guid>http://www.rohansweb.co.uk/rohanos-download</guid>
     </item>
 
     <item>
-        <title>Download RohanOS</title>
-        <link>http://www.rohansweb.co.uk</link>
-        <description>The latest version of RohanOS is available for download. Experience the custom operating system project.</description>
-        <pubDate>Fri, 03 Apr 2026 00:00:00 GMT</pubDate>
-        <guid>http://www.rohansweb.co.uk/rohanos</guid>
+        <title>Art, Expression, and Graffiti</title>
+        <link>http://www.rohansweb.co.uk/art</link>
+        <description>New content in the Art section exploring the difference between urban art and vandalism, and the power of creativity in digital mediums.</description>
+        <category>Art</category>
+        <pubDate>Wed, 01 Apr 2026 09:00:00 GMT</pubDate>
+        <guid>http://www.rohansweb.co.uk/art-section</guid>
     </item>
 
     <item>
-        <title>Get Published on Rohan's Web</title>
-        <link>http://www.rohansweb.co.uk</link>
-        <description>You can now submit your own work to be published on the site. Click the "Get Started" button on the homepage.</description>
-        <pubDate>Fri, 03 Apr 2026 00:00:00 GMT</pubDate>
-        <guid>http://www.rohansweb.co.uk/get-published</guid>
+        <title>Launch Your Own Site with Website Builder</title>
+        <link>http://www.rohansweb.co.uk/website-builder</link>
+        <description>Use the built-in Website Builder tool to start creating your own pages. Get your work published to Rohan's Web!</description>
+        <category>Tools</category>
+        <pubDate>Tue, 31 Mar 2026 12:00:00 GMT</pubDate>
+        <guid>http://www.rohansweb.co.uk/builder-tool</guid>
+    </item>
+
+    <item>
+        <title>ClassroomDraw: Digital Education Tools</title>
+        <link>http://www.rohansweb.co.uk/classroomdraw</link>
+        <description>Interactive drawing and presentation tools designed for the classroom environment. Try the latest version today.</description>
+        <category>Education</category>
+        <pubDate>Mon, 30 Mar 2026 08:30:00 GMT</pubDate>
+        <guid>http://www.rohansweb.co.uk/classroom-draw</guid>
+    </item>
+
+    <item>
+        <title>Coding Updates &amp; Text564</title>
+        <link>http://www.rohansweb.co.uk/rohans-coding</link>
+        <description>Deep dive into Rohans Coding. New updates to the Text564 system and light lab circuits.</description>
+        <category>Coding</category>
+        <pubDate>Sun, 29 Mar 2026 18:00:00 GMT</pubDate>
+        <guid>http://www.rohansweb.co.uk/coding-updates</guid>
+    </item>
+
+    <item>
+        <title>Plant Discovery &amp; Electric Motion</title>
+        <link>http://www.rohansweb.co.uk/plant-discovery</link>
+        <description>Explore the natural world and science experiments including Plant Discovery and the Electric Motion project.</description>
+        <category>Science</category>
+        <pubDate>Sat, 28 Mar 2026 11:00:00 GMT</pubDate>
+        <guid>http://www.rohansweb.co.uk/science-projects</guid>
     </item>
 
 </channel>
