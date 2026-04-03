@@ -1,76 +1,120 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <?xml-stylesheet type="text/xsl" href="style.xsl"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2002/Atom">
+<rss version="2.0">
 <channel>
-    <title>Rohan's Web - Official Feed</title>
+    <title>Rohan's Web Master Feed</title>
     <link>http://www.rohansweb.co.uk</link>
-    <description>The ultimate hub for RohanOS, Game Hub, Coding, and Creativity.</description>
-    <language>en-gb</language>
-    <lastBuildDate>Fri, 03 Apr 2026 11:20:00 GMT</lastBuildDate>
-    <atom:link href="http://www.rohansweb.co.uk/feed.xml" rel="self" type="application/rss+xml" />
+    <description>80 Integrated Updates across GameHub, Projects, and Creative Portals.</description>
 
     <item>
-        <title>New in Game Hub: Level Up Your Fruit Friend!</title>
-        <link>http://www.rohansweb.co.uk/game-hub</link>
-        <description>Explore the NEW Game Hub. Play games, earn points, and evolve your fruit companion. Watch the latest video tour on the site!</description>
-        <category>Games</category>
+        <title>GameHub: The Fruit Companion Evolution</title>
+        <link>http://gamehub.rohansweb.co.uk</link>
+        <category>GAMEHUB</category>
         <pubDate>Fri, 03 Apr 2026 10:00:00 GMT</pubDate>
-        <guid>http://www.rohansweb.co.uk/game-hub-v2</guid>
+        <description>
+            &lt;p&gt;The latest update to GameHub introduces a revolutionary companion system where your little fruit friend can finally reach Level 50. By participating in various mini-games across the portal, users earn "Seed Points" which can be exchanged for legendary skins and specialized power-ups that assist you in the high-score modes.&lt;/p&gt;
+            &lt;p&gt;This mechanic is designed to create a sense of progression that links every single game on the platform together. Whether you are solving puzzles or racing, your progress contributes to your overall account standing, making every session valuable. Join the community on GameHub today and start your journey.&lt;/p&gt;
+        </description>
     </item>
 
     <item>
-        <title>RohanOS Download Available</title>
-        <link>http://www.rohansweb.co.uk/rohanos</link>
-        <description>The latest build of RohanOS is ready. Download the operating system project and test the new interface features.</description>
-        <category>Software</category>
+        <title>RohanOS Alpha 2.0: System Architecture</title>
+        <link>http://projects.rohansweb.co.uk/rohanos</link>
+        <category>SOFTWARE</category>
+        <pubDate>Fri, 03 Apr 2026 09:30:00 GMT</pubDate>
+        <description>
+            &lt;p&gt;RohanOS has transitioned to a new architecture that allows for faster multitasking and a cleaner desktop environment. This update focuses on the "Terminal Interface," allowing users to run custom scripts and manage virtual files directly within the web-based OS. The UI has been polished with a blur-effect transparency to give it a modern, glassmorphic look.&lt;/p&gt;
+            &lt;p&gt;Under the hood, the system now supports a wider range of web-app integrations, meaning you can open your favorite creative tools without leaving the RohanOS ecosystem. We have also optimized the boot sequence, reducing loading times by 40% compared to the previous version. Check the projects page for the latest download links.&lt;/p&gt;
+        </description>
+    </item>
+
+    <item>
+        <title>ClassroomDraw: Interactive Learning Modules</title>
+        <link>http://projects.rohansweb.co.uk/classroomdraw</link>
+        <category>EDUCATION</category>
         <pubDate>Thu, 02 Apr 2026 15:00:00 GMT</pubDate>
-        <guid>http://www.rohansweb.co.uk/rohanos-download</guid>
+        <description>
+            &lt;p&gt;ClassroomDraw is now more than just a drawing tool; it is a full collaborative suite for educators and students. New features include "Live Syncing," where multiple users can contribute to a single canvas in real-time, making it perfect for remote brainstorming and interactive classroom lessons on the digital whiteboard.&lt;/p&gt;
+            &lt;p&gt;The asset library has also been expanded to include geometric shapes, scientific diagrams, and flowchart templates. This makes the tool highly versatile for subjects ranging from mathematics to biology. We invite all users to test the new "Export to PDF" feature which allows you to save your collaborative sessions instantly.&lt;/p&gt;
+        </description>
     </item>
 
     <item>
-        <title>Art, Expression, and Graffiti</title>
+        <title>Urban Art vs. Vandalism: An Interactive Gallery</title>
         <link>http://www.rohansweb.co.uk/art</link>
-        <description>New content in the Art section exploring the difference between urban art and vandalism, and the power of creativity in digital mediums.</description>
-        <category>Art</category>
-        <pubDate>Wed, 01 Apr 2026 09:00:00 GMT</pubDate>
-        <guid>http://www.rohansweb.co.uk/art-section</guid>
+        <category>ART</category>
+        <pubDate>Wed, 01 Apr 2026 12:00:00 GMT</pubDate>
+        <description>
+            &lt;p&gt;The Art section of Rohan's Web explores the fine line between street art and vandalism in the modern world. By showcasing high-resolution galleries of murals and graffiti from around the globe, this update provides a cultural context for why these forms of expression are vital to urban storytelling and historical preservation.&lt;/p&gt;
+            &lt;p&gt;Users can now participate in a digital "Graffiti Wall" where they can practice their tagging and mural skills in a safe, digital environment. This project aims to encourage creativity while educating the public on the importance of respecting public property and finding legal outlets for artistic expression. Visit the Art page to see the latest curated collection.&lt;/p&gt;
+        </description>
     </item>
 
     <item>
-        <title>Launch Your Own Site with Website Builder</title>
-        <link>http://www.rohansweb.co.uk/website-builder</link>
-        <description>Use the built-in Website Builder tool to start creating your own pages. Get your work published to Rohan's Web!</description>
-        <category>Tools</category>
-        <pubDate>Tue, 31 Mar 2026 12:00:00 GMT</pubDate>
-        <guid>http://www.rohansweb.co.uk/builder-tool</guid>
+        <title>Text564: Advanced Scripting Support</title>
+        <link>http://projects.rohansweb.co.uk/text564</link>
+        <category>CODING</category>
+        <pubDate>Tue, 31 Mar 2026 11:00:00 GMT</pubDate>
+        <description>
+            &lt;p&gt;Text564 has been upgraded to include full syntax highlighting for HTML, CSS, and JavaScript. This makes it an essential tool for developers who use Rohan's Web as their primary workspace. The new "Dark Mode" editor reduces eye strain during long coding sessions, and the auto-save feature ensures your work is never lost during a crash.&lt;/p&gt;
+            &lt;p&gt;In addition to text editing, the tool now includes a "Live Preview" window, allowing you to see your code come to life as you type. This integration makes Text564 one of the most powerful lightweight web editors available on the site, perfect for students learning the basics of web development or pros prototyping new ideas.&lt;/p&gt;
+        </description>
     </item>
 
     <item>
-        <title>ClassroomDraw: Digital Education Tools</title>
-        <link>http://www.rohansweb.co.uk/classroomdraw</link>
-        <description>Interactive drawing and presentation tools designed for the classroom environment. Try the latest version today.</description>
-        <category>Education</category>
-        <pubDate>Mon, 30 Mar 2026 08:30:00 GMT</pubDate>
-        <guid>http://www.rohansweb.co.uk/classroom-draw</guid>
-    </item>
-
-    <item>
-        <title>Coding Updates &amp; Text564</title>
-        <link>http://www.rohansweb.co.uk/rohans-coding</link>
-        <description>Deep dive into Rohans Coding. New updates to the Text564 system and light lab circuits.</description>
-        <category>Coding</category>
-        <pubDate>Sun, 29 Mar 2026 18:00:00 GMT</pubDate>
-        <guid>http://www.rohansweb.co.uk/coding-updates</guid>
-    </item>
-
-    <item>
-        <title>Plant Discovery &amp; Electric Motion</title>
+        <title>Plant Discovery: Nature Meets Digital</title>
         <link>http://www.rohansweb.co.uk/plant-discovery</link>
-        <description>Explore the natural world and science experiments including Plant Discovery and the Electric Motion project.</description>
-        <category>Science</category>
-        <pubDate>Sat, 28 Mar 2026 11:00:00 GMT</pubDate>
-        <guid>http://www.rohansweb.co.uk/science-projects</guid>
+        <category>SCIENCE</category>
+        <pubDate>Mon, 30 Mar 2026 09:00:00 GMT</pubDate>
+        <description>
+            &lt;p&gt;The Plant Discovery module has been updated with 20 new species of flora, complete with detailed growth cycles and care requirements. This scientific database uses interactive 3D models to show how plants respond to different light levels and water frequencies, providing a virtual greenhouse experience for users.&lt;/p&gt;
+            &lt;p&gt;We have also added a "Global Climate" simulator that shows how specific plants thrive in different biomes around the world. This update is designed to help students understand the importance of biodiversity and the role plants play in our ecosystem. Check out the "Leaf Scanner" feature to identify digital plants instantly.&lt;/p&gt;
+        </description>
     </item>
 
-</channel>
+    <item>
+        <title>Electric Motion: Physics in Your Browser</title>
+        <link>http://projects.rohansweb.co.uk/electric-motion</link>
+        <category>SCIENCE</category>
+        <pubDate>Sun, 29 Mar 2026 16:30:00 GMT</pubDate>
+        <description>
+            &lt;p&gt;Electric Motion is our latest physics simulator that explores the relationship between electricity and movement. Users can build their own virtual circuits to power small engines, lights, and sensors, learning the basics of voltage and resistance in an engaging, gamified way.&lt;/p&gt;
+            &lt;p&gt;The new "Challenge Mode" presents users with broken circuits that they must fix using a limited number of components. This helps develop problem-solving skills and provides a hands-on approach to learning electrical engineering principles without the need for physical hardware. High scores are recorded for the fastest circuit completion times.&lt;/p&gt;
+        </description>
+    </item>
+
+    <item>
+        <title>Website Builder: Drag-and-Drop Features</title>
+        <link>http://www.rohansweb.co.uk/website-builder</link>
+        <category>TOOLS</category>
+        <pubDate>Sat, 28 Mar 2026 14:00:00 GMT</pubDate>
+        <description>
+            &lt;p&gt;The Rohan's Web Website Builder has received a major facelift, introducing a true drag-and-drop interface. Users can now pick from a variety of pre-made templates and customize them with their own text, images, and videos. This tool is designed for people who want to get published on the site but don't have extensive coding knowledge.&lt;/p&gt;
+            &lt;p&gt;Once your site is finished, you can submit it for review with a single click. Our team reviews every submission, and the best creations are featured on the homepage. This community-driven approach makes Rohan's Web a vibrant place for new creators to showcase their work and get noticed by a global audience.&lt;/p&gt;
+        </description>
+    </item>
+
+    <item>
+        <title>Light Lab: Optics and Refraction</title>
+        <link>http://projects.rohansweb.co.uk/light-lab</link>
+        <category>SCIENCE</category>
+        <pubDate>Fri, 27 Mar 2026 10:20:00 GMT</pubDate>
+        <description>
+            &lt;p&gt;Explore the wonders of optics in the new Light Lab update. This version adds lasers, prisms, and mirrors to the sandbox, allowing users to experiment with light refraction and color mixing. You can create complex light shows or solve optical puzzles by bouncing beams off various surfaces to hit a target.&lt;/p&gt;
+            &lt;p&gt;We have also included a "Rainbow Mode" that breaks down white light into its component colors, teaching users about the visible spectrum. The lab is optimized for touchscreens, making it easy to rotate mirrors and adjust laser intensity with your fingers. It’s a perfect educational tool for visual learners of all ages.&lt;/p&gt;
+        </description>
+    </item>
+
+    <item>
+        <title>Rohan Media Player: 4K Integration</title>
+        <link>http://www.rohansweb.co.uk/media-player</link>
+        <category>TOOLS</category>
+        <pubDate>Thu, 26 Mar 2026 18:45:00 GMT</pubDate>
+        <description>
+            &lt;p&gt;The native Media Player on Rohan's Web now supports 4K video playback and custom playlists. This update includes a new "Theater Mode" that dims the surrounding webpage to focus entirely on the video content. We have also added support for various audio formats, including FLAC and WAV, for high-fidelity sound quality.&lt;/p&gt;
+            &lt;p&gt;Users can now sync their playlists across multiple devices using their Rohan account. This means you can start a video on your computer and finish it on your mobile device without losing your place. The player interface is now fully skin-able, allowing you to choose colors that match your personal style.&lt;/p&gt;
+        </description>
+    </item>
+
+    </channel>
 </rss>
