@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2002/Atom">
+<channel>
+    <title>Rohan's Web</title>
+    <link>http://www.rohansweb.co.uk</link>
+    <description>Latest updates, apps, and projects from Rohan's Web including RohanOS and Game Hub.</description>
+    <language>en-gb</language>
+    <lastBuildDate>Fri, 03 Apr 2026 11:08:00 GMT</lastBuildDate>
+    <atom:link href="http://www.rohansweb.co.uk/feed.xml" rel="self" type="application/rss+xml" />
+
+    <item>
+        <title>New Video Update</title>
+        <link>http://www.rohansweb.co.uk</link>
+        <description>A new video has been posted to the Rohan's Web blog. Tap to view the latest content!</description>
+        <pubDate>Tue, 08 Jul 2025 00:00:00 GMT</pubDate>
+        <guid>http://www.rohansweb.co.uk/#video-july-2025</guid>
+    </item>
+
+    <item>
+        <title>Explore the NEW Game Hub</title>
+        <link>http://www.rohansweb.co.uk</link>
+        <description>Play lots of fun games and earn points. Level up your fruit friend as you play!</description>
+        <pubDate>Fri, 03 Apr 2026 00:00:00 GMT</pubDate>
+        <guid>http://www.rohansweb.co.uk/game-hub</guid>
+    </item>
+
+    <item>
+        <title>Download RohanOS</title>
+        <link>http://www.rohansweb.co.uk</link>
+        <description>The latest version of RohanOS is available for download. Experience the custom operating system project.</description>
+        <pubDate>Fri, 03 Apr 2026 00:00:00 GMT</pubDate>
+        <guid>http://www.rohansweb.co.uk/rohanos</guid>
+    </item>
+
+    <item>
+        <title>Get Published on Rohan's Web</title>
+        <link>http://www.rohansweb.co.uk</link>
+        <description>You can now submit your own work to be published on the site. Click the "Get Started" button on the homepage.</description>
+        <pubDate>Fri, 03 Apr 2026 00:00:00 GMT</pubDate>
+        <guid>http://www.rohansweb.co.uk/get-published</guid>
+    </item>
+
+</channel>
+</rss>
