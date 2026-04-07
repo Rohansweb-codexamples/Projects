@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mother's Day Special (UK)</title>
+    <script>
+        function getUKMothersDay(year) {
+            let easter = getEasterSunday(year); // Find Easter Sunday
+            let motheringSunday = new Date(easter); 
+            motheringSunday.setDate(easter.getDate() - 21); // Fourth Sunday of Lent (21 days before Easter)
+            return motheringSunday;
+        }
+
+        function getEasterSunday(year) {
+            // Computus algorithm to calculate Easter Sunday
+            let a = year % 19;
+            let b = Math.floor(year / 100);
+            let c = year % 100;
+            let d = Math.floor(b / 4);
+            let e = b % 4;
+            let f = Math.floor((b + 8) / 25);
+            let g = Math.floor((b - f + 1) / 3);
+            let h = (19 * a + b - d - g + 15) % 30;
+            let i = Math.floor(c / 4);
+            let k = c % 4;
+            let l = (32 + 2 * e + 2 * i - h - k) % 7;
+            let m = Math.floor((a + 11 * h + 22 * l) / 451);
+            let month = Math.floor((h + l - 7 * m + 114) / 31);
+            let day = ((h + l - 7 * m + 114) % 31) + 1;
+            return new Date(year, month - 1, day);
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            let today = new Date();
+            let mothersDay = getUKMothersDay(today.getFullYear());
+
+            console.log("Today's Date:", today.toDateString());
+            console.log("UK Mother's Day:", mothersDay.toDateString());
+
+            if (today.toDateString() === mothersDay.toDateString()) {
+                document.getElementById("mothers-day-image").style.display = "block";
+            }
+        });
+    </script>
+</head>
+<body>
+    <h1></h1>
+    
+    <img id="mothers-day-image" src="https://i.postimg.cc/BQNdjDF3/Chat-GPT-Image-Mar-30-2025-08-35-10-AM.png" 
+         alt="Mother's Day Special Logo" style="display: none; width: 300px;">
+
+</body>
+</html>
