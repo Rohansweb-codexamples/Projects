@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Botanical World</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&amp;family=DM+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+  <style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  @keyframes float { 0%,100%{ transform: translateY(0) rotate(0deg); } 50%{ transform: translateY(-18px) rotate(3deg); } }
+  @keyframes floatSlow { 0%,100%{ transform: translateY(0) rotate(0deg); } 50%{ transform: translateY(-12px) rotate(-2deg); } }
+  @keyframes sway { 0%,100%{ transform: rotate(-3deg); } 50%{ transform: rotate(3deg); } }
+  @keyframes growUp { 0%{ transform: scaleY(0); opacity:0; } 100%{ transform: scaleY(1); opacity:1; } }
+  @keyframes fadeSlideUp { 0%{ opacity:0; transform: translateY(40px); } 100%{ opacity:1; transform: translateY(0); } }
+  @keyframes pulse { 0%,100%{ transform: scale(1); } 50%{ transform: scale(1.05); } }
+  @keyframes drift { 0%{ transform: translateX(0) translateY(0); } 25%{ transform: translateX(15px) translateY(-10px); } 50%{ transform: translateX(-5px) translateY(-20px); } 75%{ transform: translateX(-15px) translateY(-8px); } 100%{ transform: translateX(0) translateY(0); } }
+  @keyframes spin { 0%{ transform: rotate(0deg); } 100%{ transform: rotate(360deg); } }
+  @keyframes leafDrop { 0%{ opacity:0; transform: translateY(-60px) rotate(0deg); } 50%{ opacity:1; } 100%{ opacity:0.7; transform: translateY(60px) rotate(180deg); } }
+
+  .anim-float { animation: float 4s ease-in-out infinite; }
+  .anim-float-slow { animation: floatSlow 5s ease-in-out infinite; }
+  .anim-sway { animation: sway 3s ease-in-out infinite; transform-origin: bottom center; }
+  .anim-grow { animation: growUp 1.2s ease-out forwards; transform-origin: bottom center; }
+  .anim-fade-up { animation: fadeSlideUp 0.8s ease-out forwards; }
+  .anim-pulse { animation: pulse 3s ease-in-out infinite; }
+  .anim-drift { animation: drift 8s ease-in-out infinite; }
+  .anim-spin-slow { animation: spin 20s linear infinite; }
+  .anim-leaf-drop { animation: leafDrop 6s ease-in-out infinite; }
+
+  .delay-1 { animation-delay: 0.2s; }
+  .delay-2 { animation-delay: 0.4s; }
+  .delay-3 { animation-delay: 0.6s; }
+  .delay-4 { animation-delay: 0.8s; }
+  .delay-5 { animation-delay: 1s; }
+  .delay-6 { animation-delay: 1.5s; }
+  .delay-7 { animation-delay: 2s; }
+
+  .plant-card { transition: transform 0.4s ease, box-shadow 0.4s ease; }
+  .plant-card:hover { transform: translateY(-8px) scale(1.02); }
+
+  .parallax-layer { transition: transform 0.1s ease-out; }
+</style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full">
+  <div id="app" class="w-full h-full overflow-auto" style="background:#0a1a0f; font-family:'DM Sans',sans-serif;"><!-- Floating Particles Background -->
+   <div class="fixed inset-0 pointer-events-none overflow-hidden" style="z-index:0;">
+    <div class="anim-drift delay-1" style="position:absolute;top:10%;left:8%;width:6px;height:6px;border-radius:50%;background:rgba(134,239,172,0.3);"></div>
+    <div class="anim-drift delay-3" style="position:absolute;top:30%;left:75%;width:4px;height:4px;border-radius:50%;background:rgba(167,243,208,0.2);"></div>
+    <div class="anim-drift delay-5" style="position:absolute;top:60%;left:20%;width:8px;height:8px;border-radius:50%;background:rgba(74,222,128,0.15);"></div>
+    <div class="anim-drift delay-7" style="position:absolute;top:80%;left:60%;width:5px;height:5px;border-radius:50%;background:rgba(134,239,172,0.25);"></div>
+    <div class="anim-drift delay-2" style="position:absolute;top:45%;left:90%;width:7px;height:7px;border-radius:50%;background:rgba(187,247,208,0.2);"></div><!-- Falling leaves -->
+    <svg class="anim-leaf-drop delay-1" style="position:absolute;top:5%;left:15%;opacity:0;" width="20" height="20" viewbox="0 0 20 20">
+     <path d="M10 0C10 0 0 8 0 14c0 3 4 6 10 6s10-3 10-6C20 8 10 0 10 0z" fill="rgba(74,222,128,0.2)" />
+    </svg>
+    <svg class="anim-leaf-drop delay-4" style="position:absolute;top:2%;left:70%;opacity:0;" width="16" height="16" viewbox="0 0 20 20">
+     <path d="M10 0C10 0 0 8 0 14c0 3 4 6 10 6s10-3 10-6C20 8 10 0 10 0z" fill="rgba(134,239,172,0.15)" />
+    </svg>
+    <svg class="anim-leaf-drop delay-6" style="position:absolute;top:8%;left:45%;opacity:0;" width="24" height="24" viewbox="0 0 20 20">
+     <path d="M10 0C10 0 0 8 0 14c0 3 4 6 10 6s10-3 10-6C20 8 10 0 10 0z" fill="rgba(167,243,208,0.12)" />
+    </svg>
+   </div><!-- HERO SECTION -->
+   <header class="relative w-full overflow-hidden" style="min-height:600px; background: linear-gradient(170deg, #0a1a0f 0%, #0f2918 40%, #143822 70%, #0a1a0f 100%);"><!-- Large decorative plant SVG background -->
+    <div class="absolute inset-0 flex items-center justify-center" style="z-index:1;"><!-- Giant monstera leaf -->
+     <svg class="anim-sway" style="position:absolute;right:-5%;bottom:0;opacity:0.12;" width="500" height="600" viewbox="0 0 500 600"><path d="M250 580C250 580 100 500 80 350C60 200 150 80 250 20C350 80 440 200 420 350C400 500 250 580 250 580Z" fill="#4ade80" /> <path d="M250 580L250 20" stroke="#0a1a0f" stroke-width="8" fill="none" /> <path d="M250 150C200 130 160 170 140 220" stroke="#0a1a0f" stroke-width="5" fill="none" /> <path d="M250 250C300 230 340 270 360 320" stroke="#0a1a0f" stroke-width="5" fill="none" /> <path d="M250 350C200 330 160 370 150 420" stroke="#0a1a0f" stroke-width="5" fill="none" />
+     </svg><!-- Fern frond left -->
+     <svg class="anim-float-slow" style="position:absolute;left:-3%;top:10%;opacity:0.1;" width="300" height="500" viewbox="0 0 300 500"><path d="M150 480C150 480 150 20 150 20" stroke="#86efac" stroke-width="4" fill="none" /> <path d="M150 60C100 40 60 70 50 100" stroke="#86efac" stroke-width="2" fill="none" /> <path d="M150 60C200 40 240 70 250 100" stroke="#86efac" stroke-width="2" fill="none" /> <path d="M150 120C90 100 50 130 40 170" stroke="#86efac" stroke-width="2" fill="none" /> <path d="M150 120C210 100 250 130 260 170" stroke="#86efac" stroke-width="2" fill="none" /> <path d="M150 180C90 160 40 190 30 240" stroke="#86efac" stroke-width="2" fill="none" /> <path d="M150 180C210 160 260 190 270 240" stroke="#86efac" stroke-width="2" fill="none" /> <path d="M150 250C90 230 40 260 30 310" stroke="#86efac" stroke-width="2" fill="none" /> <path d="M150 250C210 230 260 260 270 310" stroke="#86efac" stroke-width="2" fill="none" /> <path d="M150 320C100 300 60 330 50 370" stroke="#86efac" stroke-width="2" fill="none" /> <path d="M150 320C200 300 240 330 250 370" stroke="#86efac" stroke-width="2" fill="none" />
+     </svg>
+    </div><!-- Hero content -->
+    <div class="relative flex flex-col items-center justify-center text-center px-6 py-32" style="z-index:2;"><!-- Animated flower icon -->
+     <div class="anim-pulse mb-6">
+      <svg width="60" height="60" viewbox="0 0 60 60"><circle cx="30" cy="30" r="8" fill="#facc15" /> <ellipse cx="30" cy="12" rx="7" ry="12" fill="#4ade80" opacity="0.8">
+        <animatetransform attributename="transform" type="rotate" values="0 30 30;10 30 30;0 30 30;-10 30 30;0 30 30" dur="4s" repeatcount="indefinite" />
+       </ellipse> <ellipse cx="48" cy="24" rx="7" ry="12" fill="#86efac" opacity="0.7" transform="rotate(72 30 30)">
+        <animatetransform attributename="transform" type="rotate" values="72 30 30;82 30 30;72 30 30;62 30 30;72 30 30" dur="4s" repeatcount="indefinite" />
+       </ellipse> <ellipse cx="41" cy="46" rx="7" ry="12" fill="#4ade80" opacity="0.8" transform="rotate(144 30 30)">
+        <animatetransform attributename="transform" type="rotate" values="144 30 30;154 30 30;144 30 30;134 30 30;144 30 30" dur="4s" repeatcount="indefinite" />
+       </ellipse> <ellipse cx="19" cy="46" rx="7" ry="12" fill="#86efac" opacity="0.7" transform="rotate(216 30 30)">
+        <animatetransform attributename="transform" type="rotate" values="216 30 30;226 30 30;216 30 30;206 30 30;216 30 30" dur="4s" repeatcount="indefinite" />
+       </ellipse> <ellipse cx="12" cy="24" rx="7" ry="12" fill="#4ade80" opacity="0.8" transform="rotate(288 30 30)">
+        <animatetransform attributename="transform" type="rotate" values="288 30 30;298 30 30;288 30 30;278 30 30;288 30 30" dur="4s" repeatcount="indefinite" />
+       </ellipse>
+      </svg>
+     </div>
+     <h1 id="hero-title" class="anim-fade-up" style="font-family:'Playfair Display',serif;font-size:clamp(2.5rem,6vw,5rem);font-weight:700;color:#e2e8f0;line-height:1.1;letter-spacing:-0.02em;">The Botanical<br><span style="color:#4ade80;font-style:italic;">World</span></h1>
+     <p id="hero-subtitle" class="anim-fade-up delay-2 mt-6 max-w-lg" style="color:#94a3b8;font-size:clamp(1rem,2vw,1.25rem);line-height:1.7;">Discover the quiet elegance of plant life — from towering canopies to delicate ferns unfurling at dawn.</p><!-- Scroll indicator -->
+     <div class="anim-float mt-16" style="color:#4ade80;"><i data-lucide="chevron-down" style="width:32px;height:32px;"></i>
+     </div>
+    </div>
+   </header><!-- GROWING STEMS DIVIDER -->
+   <div class="relative w-full flex justify-center" style="height:120px;background:#0a1a0f;overflow:hidden;">
+    <svg width="100%" height="120" viewbox="0 0 800 120" preserveaspectratio="none"><line x1="200" y1="120" x2="200" y2="20" stroke="#22c55e" stroke-width="2" class="anim-grow" style="animation-delay:0s;" /> <circle cx="200" cy="18" r="5" fill="#4ade80" class="anim-grow" style="animation-delay:0.5s;" /> <line x1="400" y1="120" x2="400" y2="10" stroke="#16a34a" stroke-width="2" class="anim-grow" style="animation-delay:0.3s;" /> <circle cx="400" cy="8" r="6" fill="#86efac" class="anim-grow" style="animation-delay:0.8s;" /> <line x1="600" y1="120" x2="600" y2="30" stroke="#22c55e" stroke-width="2" class="anim-grow" style="animation-delay:0.6s;" /> <circle cx="600" cy="28" r="4" fill="#4ade80" class="anim-grow" style="animation-delay:1.1s;" />
+    </svg>
+   </div><!-- FEATURED PLANTS -->
+   <section class="relative w-full px-6 py-20" style="background: linear-gradient(180deg, #0a1a0f 0%, #0f2216 100%);z-index:1;">
+    <div class="max-w-6xl mx-auto">
+     <h2 id="section-title" class="anim-fade-up text-center mb-4" style="font-family:'Playfair Display',serif;font-size:clamp(1.8rem,4vw,3rem);color:#e2e8f0;font-weight:700;">Featured Species</h2>
+     <p class="text-center mb-16" style="color:#64748b;font-size:1rem;">Hover to see them come alive</p>
+     <div class="grid grid-cols-1 md:grid-cols-3 gap-8"><!-- Card 1: Monstera -->
+      <div class="plant-card rounded-2xl p-6 cursor-pointer" style="background:linear-gradient(145deg,#132a1a,#1a3d24);border:1px solid rgba(74,222,128,0.15);box-shadow:0 4px 30px rgba(0,0,0,0.3);">
+       <div class="flex items-center justify-center mb-6" style="height:200px;">
+        <svg class="anim-sway" width="160" height="180" viewbox="0 0 160 180"><line x1="80" y1="180" x2="80" y2="60" stroke="#16a34a" stroke-width="4" /> <path d="M80 70C80 70 30 20 20 60C10 100 50 110 80 90C110 110 150 100 140 60C130 20 80 70 80 70Z" fill="#22c55e" /> <path d="M80 90L60 50" stroke="#0f2918" stroke-width="2" fill="none" /> <path d="M80 90L100 50" stroke="#0f2918" stroke-width="2" fill="none" /> <path d="M80 80L50 75" stroke="#0f2918" stroke-width="2" fill="none" /> <path d="M80 80L110 75" stroke="#0f2918" stroke-width="2" fill="none" /> <!-- Holes in leaf --> <ellipse cx="60" cy="65" rx="6" ry="8" fill="#132a1a" /> <ellipse cx="100" cy="65" rx="6" ry="8" fill="#132a1a" />
+        </svg>
+       </div>
+       <h3 style="font-family:'Playfair Display',serif;color:#e2e8f0;font-size:1.4rem;font-weight:700;">Monstera Deliciosa</h3>
+       <p class="mt-2" style="color:#94a3b8;font-size:0.9rem;line-height:1.6;">The Swiss cheese plant, famous for its dramatic perforated leaves and tropical charm.</p>
+       <div class="flex items-center gap-2 mt-4" style="color:#4ade80;font-size:0.8rem;"><i data-lucide="droplets" style="width:14px;height:14px;"></i> Medium water <i data-lucide="sun" style="width:14px;height:14px;margin-left:8px;"></i> Indirect light
+       </div>
+      </div><!-- Card 2: Cactus -->
+      <div class="plant-card rounded-2xl p-6 cursor-pointer" style="background:linear-gradient(145deg,#1a2a13,#243d1a);border:1px solid rgba(74,222,128,0.15);box-shadow:0 4px 30px rgba(0,0,0,0.3);">
+       <div class="flex items-center justify-center mb-6" style="height:200px;">
+        <svg class="anim-float-slow" width="120" height="180" viewbox="0 0 120 180"><!-- Pot --> <path d="M30 145L25 175L95 175L90 145Z" fill="#a0522d" /> <rect x="25" y="140" width="70" height="8" rx="3" fill="#c0733d" /> <!-- Cactus body --> <rect x="45" y="50" width="30" height="95" rx="15" fill="#22c55e" /> <!-- Left arm --> <rect x="20" y="70" width="20" height="50" rx="10" fill="#16a34a" transform="rotate(0)" /> <rect x="10" y="50" width="20" height="35" rx="10" fill="#22c55e" /> <!-- Right arm --> <rect x="80" y="85" width="20" height="40" rx="10" fill="#16a34a" /> <rect x="85" y="65" width="20" height="30" rx="10" fill="#22c55e" /> <!-- Spines --> <line x1="55" y1="55" x2="50" y2="45" stroke="#86efac" stroke-width="1" /> <line x1="65" y1="60" x2="72" y2="52" stroke="#86efac" stroke-width="1" /> <line x1="55" y1="75" x2="48" y2="70" stroke="#86efac" stroke-width="1" /> <line x1="65" y1="90" x2="73" y2="85" stroke="#86efac" stroke-width="1" /> <line x1="55" y1="105" x2="48" y2="100" stroke="#86efac" stroke-width="1" /> <!-- Flower on top --> <circle cx="60" cy="45" r="8" fill="#fb7185" /> <circle cx="60" cy="45" r="3" fill="#fbbf24" />
+        </svg>
+       </div>
+       <h3 style="font-family:'Playfair Display',serif;color:#e2e8f0;font-size:1.4rem;font-weight:700;">Saguaro Cactus</h3>
+       <p class="mt-2" style="color:#94a3b8;font-size:0.9rem;line-height:1.6;">The iconic desert sentinel that can live for over 150 years and grow up to 40 feet tall.</p>
+       <div class="flex items-center gap-2 mt-4" style="color:#4ade80;font-size:0.8rem;"><i data-lucide="droplets" style="width:14px;height:14px;"></i> Low water <i data-lucide="sun" style="width:14px;height:14px;margin-left:8px;"></i> Full sun
+       </div>
+      </div><!-- Card 3: Fern -->
+      <div class="plant-card rounded-2xl p-6 cursor-pointer" style="background:linear-gradient(145deg,#0f2a1a,#163d22);border:1px solid rgba(74,222,128,0.15);box-shadow:0 4px 30px rgba(0,0,0,0.3);">
+       <div class="flex items-center justify-center mb-6" style="height:200px;">
+        <svg width="180" height="180" viewbox="0 0 180 180"><!-- Multiple swaying fronds --> <g class="anim-sway" style="transform-origin:90px 170px;animation-delay:0s;">
+          <path d="M90 170C90 170 90 100 70 40C68 42 66 50 65 60C63 50 58 42 55 38C55 42 54 52 55 65C52 55 47 48 43 44C44 50 45 62 48 75C44 65 38 58 33 55C36 62 40 75 45 88L90 170Z" fill="#22c55e" />
+         </g> <g class="anim-sway" style="transform-origin:90px 170px;animation-delay:0.5s;">
+          <path d="M90 170C90 170 90 100 110 40C112 42 114 50 115 60C117 50 122 42 125 38C125 42 126 52 125 65C128 55 133 48 137 44C136 50 135 62 132 75C136 65 142 58 147 55C144 62 140 75 135 88L90 170Z" fill="#16a34a" />
+         </g> <g class="anim-sway" style="transform-origin:90px 170px;animation-delay:0.25s;">
+          <path d="M90 170C90 170 85 110 60 55C58 60 58 70 60 80C56 70 50 62 46 58C48 65 50 78 55 90C50 80 44 74 38 70C42 78 48 92 55 105L90 170Z" fill="#4ade80" opacity="0.7" />
+         </g> <g class="anim-sway" style="transform-origin:90px 170px;animation-delay:0.75s;">
+          <path d="M90 170C90 170 95 110 120 55C122 60 122 70 120 80C124 70 130 62 134 58C132 65 130 78 125 90C130 80 136 74 142 70C138 78 132 92 125 105L90 170Z" fill="#4ade80" opacity="0.7" />
+         </g>
+        </svg>
+       </div>
+       <h3 style="font-family:'Playfair Display',serif;color:#e2e8f0;font-size:1.4rem;font-weight:700;">Boston Fern</h3>
+       <p class="mt-2" style="color:#94a3b8;font-size:0.9rem;line-height:1.6;">Lush, arching fronds cascade beautifully, purifying air while adding timeless green elegance.</p>
+       <div class="flex items-center gap-2 mt-4" style="color:#4ade80;font-size:0.8rem;"><i data-lucide="droplets" style="width:14px;height:14px;"></i> High water <i data-lucide="sun" style="width:14px;height:14px;margin-left:8px;"></i> Shade
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- PLANT FACTS TICKER -->
+   <div class="w-full overflow-hidden py-4" style="background:#0d2214;border-top:1px solid rgba(74,222,128,0.1);border-bottom:1px solid rgba(74,222,128,0.1);">
+    <div id="ticker" class="flex gap-12 whitespace-nowrap" style="color:#4ade80;font-size:0.85rem;"><span>🌿 There are over 390,000 known plant species on Earth</span> <span>🌸 The corpse flower blooms only once every 7–10 years</span> <span>🌵 Cacti can survive up to two years without rain</span> <span>🍃 Bamboo can grow up to 91 cm in a single day</span> <span>🌻 Sunflowers track the sun across the sky</span> <span>🌲 The oldest tree is over 5,000 years old</span> <span>🌿 Plants communicate through underground fungal networks</span> <span>🌺 70% of medicines come from plants</span>
+    </div>
+   </div><!-- PLANT CARE TIPS -->
+   <section class="w-full px-6 py-20" style="background:linear-gradient(180deg,#0f2216,#0a1a0f);">
+    <div class="max-w-4xl mx-auto">
+     <h2 class="text-center mb-16" style="font-family:'Playfair Display',serif;font-size:clamp(1.8rem,4vw,2.5rem);color:#e2e8f0;font-weight:700;">Care Essentials</h2>
+     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      <div class="plant-card rounded-xl p-6 flex items-start gap-4" style="background:rgba(74,222,128,0.05);border:1px solid rgba(74,222,128,0.1);">
+       <div class="anim-pulse flex-shrink-0 rounded-full flex items-center justify-center" style="width:48px;height:48px;background:rgba(74,222,128,0.15);"><i data-lucide="droplets" style="width:24px;height:24px;color:#4ade80;"></i>
+       </div>
+       <div>
+        <h3 style="color:#e2e8f0;font-weight:600;font-size:1.1rem;">Watering</h3>
+        <p style="color:#94a3b8;font-size:0.85rem;line-height:1.6;margin-top:4px;">Check soil moisture before watering. Most plants prefer to dry slightly between waterings.</p>
+       </div>
+      </div>
+      <div class="plant-card rounded-xl p-6 flex items-start gap-4" style="background:rgba(74,222,128,0.05);border:1px solid rgba(74,222,128,0.1);">
+       <div class="anim-pulse delay-1 flex-shrink-0 rounded-full flex items-center justify-center" style="width:48px;height:48px;background:rgba(250,204,21,0.15);"><i data-lucide="sun" style="width:24px;height:24px;color:#facc15;"></i>
+       </div>
+       <div>
+        <h3 style="color:#e2e8f0;font-weight:600;font-size:1.1rem;">Light</h3>
+        <p style="color:#94a3b8;font-size:0.85rem;line-height:1.6;margin-top:4px;">Know your plant's needs — bright indirect, low, or full sun. Rotate regularly for even growth.</p>
+       </div>
+      </div>
+      <div class="plant-card rounded-xl p-6 flex items-start gap-4" style="background:rgba(74,222,128,0.05);border:1px solid rgba(74,222,128,0.1);">
+       <div class="anim-pulse delay-2 flex-shrink-0 rounded-full flex items-center justify-center" style="width:48px;height:48px;background:rgba(134,239,172,0.15);"><i data-lucide="thermometer" style="width:24px;height:24px;color:#86efac;"></i>
+       </div>
+       <div>
+        <h3 style="color:#e2e8f0;font-weight:600;font-size:1.1rem;">Temperature</h3>
+        <p style="color:#94a3b8;font-size:0.85rem;line-height:1.6;margin-top:4px;">Most houseplants thrive between 18–24°C. Keep away from cold drafts and heating vents.</p>
+       </div>
+      </div>
+      <div class="plant-card rounded-xl p-6 flex items-start gap-4" style="background:rgba(74,222,128,0.05);border:1px solid rgba(74,222,128,0.1);">
+       <div class="anim-pulse delay-3 flex-shrink-0 rounded-full flex items-center justify-center" style="width:48px;height:48px;background:rgba(251,113,133,0.15);"><i data-lucide="heart" style="width:24px;height:24px;color:#fb7185;"></i>
+       </div>
+       <div>
+        <h3 style="color:#e2e8f0;font-weight:600;font-size:1.1rem;">Love &amp; Patience</h3>
+        <p style="color:#94a3b8;font-size:0.85rem;line-height:1.6;margin-top:4px;">Plants respond to consistency. A stable routine matters more than perfection.</p>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- FOOTER -->
+   <footer class="w-full px-6 py-12 text-center" style="background:#071210;border-top:1px solid rgba(74,222,128,0.08);">
+    <div class="anim-spin-slow inline-block mb-4">
+     <svg width="30" height="30" viewbox="0 0 30 30"><circle cx="15" cy="15" r="5" fill="#4ade80" opacity="0.6" /> <ellipse cx="15" cy="5" rx="4" ry="6" fill="#22c55e" opacity="0.4" /> <ellipse cx="24" cy="11" rx="4" ry="6" fill="#22c55e" opacity="0.4" transform="rotate(72 15 15)" /> <ellipse cx="21" cy="23" rx="4" ry="6" fill="#22c55e" opacity="0.4" transform="rotate(144 15 15)" /> <ellipse cx="9" cy="23" rx="4" ry="6" fill="#22c55e" opacity="0.4" transform="rotate(216 15 15)" /> <ellipse cx="6" cy="11" rx="4" ry="6" fill="#22c55e" opacity="0.4" transform="rotate(288 15 15)" />
+     </svg>
+    </div>
+    <p style="color:#64748b;font-size:0.85rem;">Cultivated with care · The Botanical World</p>
+   </footer>
+  </div>
+  <script>
+  // Ticker animation
+  const ticker = document.getElementById('ticker');
+  let tickerPos = 0;
+  const tickerContent = ticker.innerHTML;
+  ticker.innerHTML = tickerContent + tickerContent;
+  function animateTicker() {
+    tickerPos -= 0.5;
+    if (Math.abs(tickerPos) >= ticker.scrollWidth / 2) tickerPos = 0;
+    ticker.style.transform = `translateX(${tickerPos}px)`;
+    requestAnimationFrame(animateTicker);
+  }
+  animateTicker();
+
+  // Intersection observer for scroll animations
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.style.opacity = '1';
+        e.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.plant-card').forEach(card => {
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(30px)';
+    card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+    observer.observe(card);
+  });
+
+  // Element SDK
+  const defaultConfig = {
+    hero_title: 'The Botanical<br><span style="color:#4ade80;font-style:italic;">World</span>',
+    hero_subtitle: 'Discover the quiet elegance of plant life — from towering canopies to delicate ferns unfurling at dawn.',
+    section_title: 'Featured Species',
+    background_color: '#0a1a0f',
+    surface_color: '#132a1a',
+    text_color: '#e2e8f0',
+    accent_color: '#4ade80',
+    secondary_accent: '#fb7185',
+    font_family: 'Playfair Display',
+    font_size: 16
+  };
+
+  async function onConfigChange(config) {
+    const c = { ...defaultConfig, ...config };
+    document.getElementById('hero-title').innerHTML = c.hero_title;
+    document.getElementById('hero-subtitle').textContent = c.hero_subtitle;
+    document.getElementById('section-title').textContent = c.section_title;
+
+    // Apply font
+    const font = c.font_family || defaultConfig.font_family;
+    document.querySelectorAll('h1,h2,h3').forEach(el => {
+      el.style.fontFamily = `${font}, Playfair Display, serif`;
+    });
+
+    // Apply font size scaling
+    const base = c.font_size || defaultConfig.font_size;
+    document.querySelectorAll('p').forEach(el => {
+      el.style.fontSize = `${base * 0.9}px`;
+    });
+
+    // Apply colors
+    document.getElementById('app').style.background = c.background_color;
+    document.querySelectorAll('h1,h2,h3').forEach(el => el.style.color = c.text_color);
+    document.querySelectorAll('.plant-card').forEach(el => {
+      el.style.background = `linear-gradient(145deg, ${c.surface_color}, ${c.surface_color}dd)`;
+    });
+  }
+
+  function mapToCapabilities(config) {
+    const c = { ...defaultConfig, ...config };
+    function makeColor(key) {
+      return {
+        get: () => c[key] || defaultConfig[key],
+        set: (v) => { c[key] = v; window.elementSdk.setConfig({ [key]: v }); }
+      };
+    }
+    return {
+      recolorables: [
+        makeColor('background_color'),
+        makeColor('surface_color'),
+        makeColor('text_color'),
+        makeColor('accent_color'),
+        makeColor('secondary_accent')
+      ],
+      borderables: [],
+      fontEditable: {
+        get: () => c.font_family || defaultConfig.font_family,
+        set: (v) => { c.font_family = v; window.elementSdk.setConfig({ font_family: v }); }
+      },
+      fontSizeable: {
+        get: () => c.font_size || defaultConfig.font_size,
+        set: (v) => { c.font_size = v; window.elementSdk.setConfig({ font_size: v }); }
+      }
+    };
+  }
+
+  function mapToEditPanelValues(config) {
+    const c = { ...defaultConfig, ...config };
+    return new Map([
+      ['hero_title', c.hero_title || defaultConfig.hero_title],
+      ['hero_subtitle', c.hero_subtitle || defaultConfig.hero_subtitle],
+      ['section_title', c.section_title || defaultConfig.section_title]
+    ]);
+  }
+
+  window.elementSdk.init({ defaultConfig, onConfigChange, mapToCapabilities, mapToEditPanelValues });
+
+  lucide.createIcons();
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9f0b0a0972426557',t:'MTc3NjkyODEyOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
