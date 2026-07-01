@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Scoreboard Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel-bg: #151a2c;
+      --accent: #00e0ff;
+      --accent-soft: rgba(0, 224, 255, 0.2);
+      --text: #ffffff;
+      --danger: #ff3b3b;
+      --font-main: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: var(--font-main);
+      background: radial-gradient(circle at top, #1b2340 0, #050814 60%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 24px;
+      width: 100%;
+      max-width: 1200px;
+      padding: 24px;
+    }
+
+    .panel {
+      background: var(--panel-bg);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .panel h2 {
+      margin: 0 0 16px;
+      font-size: 1.3rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .teams-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-height: 60vh;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .team-row {
+      display: grid;
+      grid-template-columns: 1.5fr 0.8fr 1.2fr auto;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #1f2740, #151a2c);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .team-name {
+      font-weight: 600;
+    }
+
+    .score-display {
+      font-size: 1.1rem;
+      text-align: center;
+      padding: 6px 10px;
+      border-radius: 8px;
+      background: rgba(0, 0, 0, 0.35);
+    }
+
+    .score-controls {
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+    }
+
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.2s ease;
+    }
+
+    button:active {
+      transform: scale(0.96);
+      box-shadow: none;
+    }
+
+    .btn-accent {
+      background: var(--accent);
+      color: #02040a;
+      box-shadow: 0 6px 16px rgba(0, 224, 255, 0.4);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--accent);
+      border: 1px solid var(--accent-soft);
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: #fff;
+      box-shadow: 0 6px 16px rgba(255, 59, 59, 0.4);
+    }
+
+    .btn-small {
+      padding: 4px 10px;
+      font-size: 0.8rem;
+    }
+
+    .new-team-form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    label {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    input[type="text"],
+    input[type="number"] {
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      padding: 8px 12px;
+      background: rgba(0, 0, 0, 0.35);
+      color: var(--text);
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    input[type="text"]:focus,
+    input[type="number"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent-soft);
+    }
+
+    .viewer-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .viewer-url {
+      font-size: 0.85rem;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 8px 10px;
+      border-radius: 10px;
+      word-break: break-all;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(0, 224, 255, 0.12);
+      font-size: 0.8rem;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 10px var(--accent);
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <section class="panel">
+      <h2>Teams & Scores</h2>
+      <div class="teams-list" id="teamsList"></div>
+
+      <form class="new-team-form" id="newTeamForm">
+        <div class="field-group">
+          <label for="teamName">New team name</label>
+          <input type="text" id="teamName" placeholder="e.g. Red Dragons" required />
+        </div>
+        <button type="submit" class="btn-accent">Add team</button>
+      </form>
+    </section>
+
+    <section class="panel">
+      <h2>Display / Viewer</h2>
+      <div class="viewer-controls">
+        <div>
+          <span class="status-pill">
+            <span class="status-dot"></span>
+            Live sync via localStorage
+          </span>
+        </div>
+        <div>
+          <p style="font-size:0.9rem; margin:0 0 6px;">
+            Open the viewer on your second screen (HDMI) using this file:
+          </p>
+          <div class="viewer-url">
+            <strong>viewer.html</strong><br />
+            Tip: Press <strong>F11</strong> in the viewer window for full-screen.
+          </div>
+        </div>
+        <button class="btn-outline" type="button" onclick="window.open('viewer.html', '_blank')">
+          Open viewer in new tab
+        </button>
+        <button class="btn-danger btn-small" type="button" onclick="resetAll()">
+          Reset all scores & teams
+        </button>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "scoreboard_teams_v1";
+
+    function loadTeams() {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return [];
+      try {
+        return JSON.parse(raw);
+      } catch {
+        return [];
+      }
+    }
+
+    function saveTeams(teams) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(teams));
+      renderTeams();
+    }
+
+    function renderTeams() {
+      const teams = loadTeams();
+      const container = document.getElementById("teamsList");
+      container.innerHTML = "";
+
+      if (teams.length === 0) {
+        container.innerHTML =
+          '<p style="opacity:0.7;font-size:0.9rem;">No teams yet. Add one below.</p>';
+        return;
+      }
+
+      teams.forEach((team, index) => {
+        const row = document.createElement("div");
+        row.className = "team-row";
+
+        const name = document.createElement("div");
+        name.className = "team-name";
+        name.textContent = team.name;
+
+        const score = document.createElement("div");
+        score.className = "score-display";
+        score.textContent = team.score;
+
+        const controls = document.createElement("div");
+        controls.className = "score-controls";
+
+        const minusBtn = document.createElement("button");
+        minusBtn.className = "btn-outline btn-small";
+        minusBtn.textContent = "-1";
+        minusBtn.onclick = () => updateScore(index, -1);
+
+        const plusBtn = document.createElement("button");
+        plusBtn.className = "btn-accent btn-small";
+        plusBtn.textContent = "+1";
+        plusBtn.onclick = () => updateScore(index, +1);
+
+        const plus5Btn = document.createElement("button");
+        plus5Btn.className = "btn-accent btn-small";
+        plus5Btn.textContent = "+5";
+        plus5Btn.onclick = () => updateScore(index, +5);
+
+        controls.append(minusBtn, plusBtn, plus5Btn);
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.className = "btn-danger btn-small";
+        deleteBtn.textContent = "✕";
+        deleteBtn.title = "Remove team";
+        deleteBtn.onclick = () => deleteTeam(index);
+
+        row.append(name, score, controls, deleteBtn);
+        container.appendChild(row);
+      });
+    }
+
+    function updateScore(index, delta) {
+      const teams = loadTeams();
+      if (!teams[index]) return;
+      teams[index].score = Math.max(0, (teams[index].score || 0) + delta);
+      saveTeams(teams);
+    }
+
+    function deleteTeam(index) {
+      const teams = loadTeams();
+      teams.splice(index, 1);
+      saveTeams(teams);
+    }
+
+    function resetAll() {
+      if (!confirm("Reset all teams and scores?")) return;
+      localStorage.removeItem(STORAGE_KEY);
+      renderTeams();
+    }
+
+    document.getElementById("newTeamForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const input = document.getElementById("teamName");
+      const name = input.value.trim();
+      if (!name) return;
+
+      const teams = loadTeams();
+      teams.push({ name, score: 0 });
+      saveTeams(teams);
+
+      input.value = "";
+      input.focus();
+    });
+
+    renderTeams();
+  </script>
+</body>
+</html>
