@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Viewer</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<style>
+body{margin:0;font-family:Orbitron,sans-serif;background:radial-gradient(circle,#173a8f,#030816);color:white;overflow:hidden}
+header{text-align:center;font-size:3rem;padding:25px;text-shadow:0 0 25px #4db8ff}
+#board{padding:20px}
+.team{display:flex;justify-content:space-between;margin:15px auto;width:90%;padding:25px;border-radius:25px;background:rgba(255,255,255,.08);backdrop-filter:blur(15px);box-shadow:0 0 20px #4db8ff55}
+.score{font-size:3rem;color:gold}
+#fs{position:fixed;top:10px;right:10px}
+#winner{display:none;position:fixed;inset:0;background:#000d;justify-content:center;align-items:center;flex-direction:column;font-size:5rem}
+</style>
+</head>
+<body>
+<button id="fs" onclick="document.documentElement.requestFullscreen()">Fullscreen</button>
+<header>🏆 LIVE LEADERBOARD</header>
+<div id="board"></div>
+<div id="winner"><div>🎉 WINNER 🎉</div><div id="wname"></div></div>
+<script>
+function draw(){
+ let teams=JSON.parse(localStorage.getItem('teams')||'[]');
+ teams.sort((a,b)=>b.points-a.points);
+ board.innerHTML=teams.map((t,i)=>`
+ <div class="team">
+ <div>${['🥇','🥈','🥉'][i]||'⭐'} ${t.name}</div>
+ <div class="score">${t.points}</div>
+ </div>`).join('');
+ if(localStorage.getItem('showWinner')==='true'){
+   wname.textContent=localStorage.getItem('winner')||'';
+   winner.style.display='flex';
+   confetti({particleCount:400,spread:200});
+   localStorage.setItem('showWinner','done');
+ }
+}
+setInterval(draw,500);
+draw();
+</script>
+</body>
+</html>
