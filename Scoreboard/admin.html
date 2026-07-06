@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Ultra Scoreboard Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+body{font-family:Orbitron,sans-serif;background:#06142e;color:#fff;margin:0;padding:20px}
+.panel{background:#102a5c;border-radius:20px;padding:20px;box-shadow:0 0 30px #2aa9ff55}
+input,button{padding:12px;border-radius:12px;border:none}
+button{cursor:pointer}
+.team{margin-top:10px;padding:15px;background:#163b80;border-radius:15px}
+</style>
+</head>
+<body>
+<div class="panel">
+<h1>🏆 Ultra Scoreboard Admin</h1>
+<input id="teamName" placeholder="Team Name">
+<button onclick="addTeam()">Add Team</button>
+<button onclick="openViewer()">Open Viewer</button>
+<button onclick="declareWinner()">Declare Winner</button>
+<div id="teams"></div>
+</div>
+<script>
+let teams=JSON.parse(localStorage.getItem('teams')||'[]');
+
+function save(){localStorage.setItem('teams',JSON.stringify(teams));render();}
+
+function addTeam(){
+ const n=document.getElementById('teamName').value.trim();
+ if(!n)return;
+ teams.push({name:n,points:0});
+ document.getElementById('teamName').value='';
+ save();
+}
+
+function render(){
+ teams.sort((a,b)=>b.points-a.points);
+ document.getElementById('teams').innerHTML=teams.map((t,i)=>`
+ <div class="team">
+ <b>${t.name}</b> — ${t.points} points
+ <button onclick="teams[${i}].points++;save()">+1</button>
+ <button onclick="teams[${i}].points--;save()">-1</button>
+ </div>`).join('');
+ localStorage.setItem('teams',JSON.stringify(teams));
+}
+
+function declareWinner(){
+ teams.sort((a,b)=>b.points-a.points);
+ if(!teams.length)return;
+ localStorage.setItem('winner',teams[0].name);
+ localStorage.setItem('showWinner','true');
+}
+
+function openViewer(){
+ const mobile=/Android|iPhone|iPad|Tablet/i.test(navigator.userAgent);
+ if(mobile){
+   window.open('viewer.html','_blank');
+ }else{
+   window.open('viewer.html','ScoreboardViewer','width=1400,height=900,menubar=no,toolbar=no,location=no,status=no');
+ }
+}
+render();
+</script>
+</body>
+</html>
