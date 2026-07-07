@@ -1,43 +1,466 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Viewer</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Live Leaderboard</title>
+
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+
 <style>
-body{margin:0;font-family:Orbitron,sans-serif;background:radial-gradient(circle,#173a8f,#030816);color:white;overflow:hidden}
-header{text-align:center;font-size:3rem;padding:25px;text-shadow:0 0 25px #4db8ff}
-#board{padding:20px}
-.team{display:flex;justify-content:space-between;margin:15px auto;width:90%;padding:25px;border-radius:25px;background:rgba(255,255,255,.08);backdrop-filter:blur(15px);box-shadow:0 0 20px #4db8ff55}
-.score{font-size:3rem;color:gold}
-#fs{position:fixed;top:10px;right:10px}
-#winner{display:none;position:fixed;inset:0;background:#000d;justify-content:center;align-items:center;flex-direction:column;font-size:5rem}
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+body{
+
+font-family:'Orbitron',sans-serif;
+
+min-height:100vh;
+
+overflow-x:hidden;
+
+background:
+linear-gradient(
+rgba(0,10,30,.55),
+rgba(0,10,30,.55)
+),
+url('https://projects.rohansweb.co.uk/Scoreboard/ChatGPT%20Image%20Jul%207,%202026,%2006_24_10%20AM.png');
+
+background-size:cover;
+background-position:center;
+background-repeat:no-repeat;
+background-attachment:fixed;
+
+color:white;
+}
+
+header{
+
+text-align:center;
+
+padding:25px;
+
+font-size:3.5rem;
+
+font-weight:900;
+
+letter-spacing:8px;
+
+color:#69d3ff;
+
+text-shadow:
+0 0 10px #69d3ff,
+0 0 30px #69d3ff,
+0 0 60px #008cff;
+
+}
+
+#fullscreenBtn{
+
+position:fixed;
+
+right:20px;
+top:20px;
+
+padding:14px 20px;
+
+border:none;
+border-radius:15px;
+
+cursor:pointer;
+
+font-family:Orbitron;
+
+background:
+linear-gradient(
+45deg,
+#008cff,
+#004dff
+);
+
+color:white;
+
+box-shadow:
+0 0 15px #008cff,
+0 0 35px #008cff;
+
+z-index:999;
+}
+
+#leaderboard{
+
+padding:25px;
+
+}
+
+.team{
+
+width:92%;
+
+margin:18px auto;
+
+display:flex;
+
+justify-content:space-between;
+
+align-items:center;
+
+padding:25px;
+
+border-radius:25px;
+
+background:
+rgba(0,20,60,.55);
+
+backdrop-filter:blur(16px);
+
+border:
+1px solid
+rgba(105,211,255,.35);
+
+box-shadow:
+0 0 20px rgba(0,140,255,.3),
+inset 0 0 20px rgba(255,255,255,.05);
+
+transition:.3s;
+
+}
+
+.team:hover{
+
+transform:scale(1.02);
+
+}
+
+.left{
+
+display:flex;
+flex-direction:column;
+gap:8px;
+
+}
+
+.rank{
+
+color:#7fd8ff;
+
+font-size:.9rem;
+
+letter-spacing:3px;
+
+}
+
+.name{
+
+font-size:2rem;
+
+font-weight:700;
+
+}
+
+.score{
+
+font-size:4rem;
+
+font-weight:900;
+
+color:#00e1ff;
+
+text-shadow:
+0 0 10px #00e1ff,
+0 0 30px #00e1ff,
+0 0 60px #008cff;
+
+}
+
+#winnerOverlay{
+
+display:none;
+
+position:fixed;
+
+inset:0;
+
+background:
+radial-gradient(
+circle,
+rgba(0,20,60,.92),
+rgba(0,0,0,.97)
+);
+
+z-index:99999;
+
+justify-content:center;
+align-items:center;
+flex-direction:column;
+
+}
+
+.winnerTitle{
+
+font-size:7rem;
+
+font-weight:900;
+
+color:gold;
+
+text-shadow:
+0 0 20px gold,
+0 0 60px gold,
+0 0 120px gold;
+
+animation:zoomIn 1.2s ease;
+
+}
+
+#winnerName{
+
+margin-top:25px;
+
+font-size:5rem;
+
+letter-spacing:8px;
+
+animation:zoomIn 1.2s ease;
+
+}
+
+#closeWinner{
+
+display:none;
+
+margin-top:40px;
+
+width:90px;
+height:90px;
+
+border:none;
+
+border-radius:50%;
+
+cursor:pointer;
+
+font-size:2rem;
+
+font-family:Orbitron;
+
+background:#ff1744;
+
+color:white;
+
+box-shadow:
+0 0 20px #ff1744,
+0 0 60px #ff1744;
+
+}
+
+@keyframes zoomIn{
+
+from{
+
+transform:scale(.2);
+
+opacity:0;
+
+}
+
+to{
+
+transform:scale(1);
+
+opacity:1;
+
+}
+
+}
+
 </style>
 </head>
+
 <body>
-<button id="fs" onclick="document.documentElement.requestFullscreen()">Fullscreen</button>
-<header>🏆 LIVE LEADERBOARD</header>
-<div id="board"></div>
-<div id="winner"><div>🎉 WINNER 🎉</div><div id="wname"></div></div>
+
+<button
+id="fullscreenBtn"
+onclick="goFullscreen()">
+Fullscreen
+</button>
+
+<header>
+LIVE LEADERBOARD
+</header>
+
+<div id="leaderboard"></div>
+
+<div id="winnerOverlay">
+
+<div class="winnerTitle">
+🎉 WINNER 🎉
+</div>
+
+<div id="winnerName"></div>
+
+<button
+id="closeWinner"
+onclick="closeWinner()">
+✕
+</button>
+
+</div>
+
 <script>
-function draw(){
- let teams=JSON.parse(localStorage.getItem('teams')||'[]');
- teams.sort((a,b)=>b.points-a.points);
- board.innerHTML=teams.map((t,i)=>`
- <div class="team">
- <div>${['🥇','🥈','🥉'][i]||'⭐'} ${t.name}</div>
- <div class="score">${t.points}</div>
- </div>`).join('');
- if(localStorage.getItem('showWinner')==='true'){
-   wname.textContent=localStorage.getItem('winner')||'';
-   winner.style.display='flex';
-   confetti({particleCount:400,spread:200});
-   localStorage.setItem('showWinner','done');
- }
+
+function goFullscreen(){
+
+if(
+document.documentElement
+.requestFullscreen
+){
+
+document
+.documentElement
+.requestFullscreen();
+
 }
-setInterval(draw,500);
-draw();
+
+}
+
+function render(){
+
+let teams =
+JSON.parse(
+localStorage.getItem("teams")
+) || [];
+
+teams.sort(
+(a,b)=>
+b.points-a.points
+);
+
+let html="";
+
+teams.forEach(
+(team,index)=>{
+
+html += `
+
+<div class="team">
+
+<div class="left">
+
+<div class="rank">
+RANK ${String(index+1).padStart(2,'0')}
+</div>
+
+<div class="name">
+${team.name}
+</div>
+
+</div>
+
+<div class="score">
+${team.points}
+</div>
+
+</div>
+
+`;
+
+});
+
+document
+.getElementById(
+"leaderboard"
+)
+.innerHTML = html;
+
+}
+
+function showWinner(name){
+
+document
+.getElementById(
+"winnerOverlay"
+)
+.style.display="flex";
+
+document
+.getElementById(
+"winnerName"
+)
+.innerText=name;
+
+confetti({
+particleCount:500,
+spread:300,
+origin:{y:.6}
+});
+
+setTimeout(()=>{
+
+document
+.getElementById(
+"closeWinner"
+)
+.style.display="block";
+
+},5000);
+
+}
+
+function closeWinner(){
+
+document
+.getElementById(
+"winnerOverlay"
+)
+.style.display="none";
+
+}
+
+function checkWinner(){
+
+if(
+localStorage.getItem(
+"showWinner"
+)==="true"
+){
+
+const winner =
+localStorage.getItem(
+"winner"
+);
+
+showWinner(
+winner
+);
+
+localStorage.setItem(
+"showWinner",
+"done"
+);
+
+}
+
+}
+
+render();
+
+setInterval(()=>{
+
+render();
+
+checkWinner();
+
+},500);
+
 </script>
+
 </body>
 </html>
