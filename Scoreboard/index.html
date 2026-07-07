@@ -1,66 +1,426 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Ultra Scoreboard Admin</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Scoreboard Admin</title>
+
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+
 <style>
-body{font-family:Orbitron,sans-serif;background:#06142e;color:#fff;margin:0;padding:20px}
-.panel{background:#102a5c;border-radius:20px;padding:20px;box-shadow:0 0 30px #2aa9ff55}
-input,button{padding:12px;border-radius:12px;border:none}
-button{cursor:pointer}
-.team{margin-top:10px;padding:15px;background:#163b80;border-radius:15px}
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+body{
+font-family:'Orbitron',sans-serif;
+min-height:100vh;
+padding:30px;
+
+background:
+linear-gradient(
+rgba(0,10,30,.92),
+rgba(0,10,30,.92)
+),
+url('https://projects.rohansweb.co.uk/Scoreboard/ChatGPT%20Image%20Jul%207,%202026,%2006_24_10%20AM.png');
+
+background-size:cover;
+background-position:center;
+
+color:white;
+}
+
+.container{
+max-width:1200px;
+margin:auto;
+}
+
+.title{
+font-size:3rem;
+font-weight:900;
+text-align:center;
+
+color:#69d3ff;
+
+text-shadow:
+0 0 10px #69d3ff,
+0 0 30px #69d3ff,
+0 0 60px #008cff;
+
+margin-bottom:30px;
+}
+
+.panel{
+background:rgba(0,20,60,.55);
+
+backdrop-filter:blur(20px);
+
+border:1px solid rgba(255,255,255,.15);
+
+border-radius:25px;
+
+padding:25px;
+
+box-shadow:
+0 0 25px rgba(0,140,255,.3);
+}
+
+.controls{
+display:flex;
+gap:10px;
+flex-wrap:wrap;
+margin-bottom:20px;
+}
+
+input{
+flex:1;
+min-width:250px;
+
+padding:15px;
+
+border:none;
+outline:none;
+
+border-radius:15px;
+
+font-family:Orbitron;
+font-size:1rem;
+
+background:#0f2d68;
+color:white;
+}
+
+button{
+padding:15px 22px;
+
+border:none;
+border-radius:15px;
+
+cursor:pointer;
+
+font-family:Orbitron;
+font-weight:700;
+
+transition:.3s;
+}
+
+button:hover{
+transform:translateY(-2px);
+}
+
+.addBtn{
+background:#00c853;
+color:white;
+}
+
+.viewerBtn{
+background:#008cff;
+color:white;
+}
+
+.winnerBtn{
+background:gold;
+color:black;
+}
+
+.team{
+margin-top:15px;
+
+padding:20px;
+
+border-radius:20px;
+
+background:rgba(255,255,255,.05);
+
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:20px;
+}
+
+.teamName{
+font-size:1.4rem;
+font-weight:700;
+}
+
+.teamScore{
+font-size:2rem;
+
+color:#00e1ff;
+
+text-shadow:
+0 0 10px #00e1ff,
+0 0 30px #00e1ff;
+}
+
+.scoreButtons{
+display:flex;
+gap:10px;
+}
+
+.plus{
+background:#00c853;
+color:white;
+}
+
+.minus{
+background:#ff1744;
+color:white;
+}
+
+.delete{
+background:#555;
+color:white;
+}
+
 </style>
 </head>
-<body>
-<div class="panel">
-<h1>🏆 Ultra Scoreboard Admin</h1>
-<input id="teamName" placeholder="Team Name">
-<button onclick="addTeam()">Add Team</button>
-<button onclick="openViewer()">Open Viewer</button>
-<button onclick="declareWinner()">Declare Winner</button>
-<div id="teams"></div>
-</div>
-<script>
-let teams=JSON.parse(localStorage.getItem('teams')||'[]');
 
-function save(){localStorage.setItem('teams',JSON.stringify(teams));render();}
+<body>
+
+<div class="container">
+
+<div class="title">
+SCOREBOARD ADMIN
+</div>
+
+<div class="panel">
+
+<div class="controls">
+
+<input
+id="teamName"
+placeholder="Enter Team Name">
+
+<button
+class="addBtn"
+onclick="addTeam()">
+Add Team
+</button>
+
+<button
+class="viewerBtn"
+onclick="openViewer()">
+Open Viewer
+</button>
+
+<button
+class="winnerBtn"
+onclick="declareWinner()">
+Declare Winner
+</button>
+
+</div>
+
+<div id="teams"></div>
+
+</div>
+
+</div>
+
+<script>
+
+let teams =
+JSON.parse(
+localStorage.getItem("teams")
+) || [];
+
+function save(){
+
+localStorage.setItem(
+"teams",
+JSON.stringify(teams)
+);
+
+render();
+
+}
 
 function addTeam(){
- const n=document.getElementById('teamName').value.trim();
- if(!n)return;
- teams.push({name:n,points:0});
- document.getElementById('teamName').value='';
- save();
+
+const name =
+document
+.getElementById("teamName")
+.value
+.trim();
+
+if(!name) return;
+
+teams.push({
+name:name,
+points:0
+});
+
+document
+.getElementById("teamName")
+.value="";
+
+save();
+
+}
+
+function addPoint(index){
+
+teams[index].points++;
+
+save();
+
+}
+
+function removePoint(index){
+
+teams[index].points--;
+
+save();
+
+}
+
+function deleteTeam(index){
+
+if(
+confirm(
+"Delete team?"
+)
+){
+
+teams.splice(index,1);
+
+save();
+
+}
+
 }
 
 function render(){
- teams.sort((a,b)=>b.points-a.points);
- document.getElementById('teams').innerHTML=teams.map((t,i)=>`
- <div class="team">
- <b>${t.name}</b> — ${t.points} points
- <button onclick="teams[${i}].points++;save()">+1</button>
- <button onclick="teams[${i}].points--;save()">-1</button>
- </div>`).join('');
- localStorage.setItem('teams',JSON.stringify(teams));
+
+teams.sort(
+(a,b)=>
+b.points-a.points
+);
+
+let html="";
+
+teams.forEach(
+(team,index)=>{
+
+html+=`
+
+<div class="team">
+
+<div>
+
+<div class="teamName">
+${team.name}
+</div>
+
+<div class="teamScore">
+${team.points}
+</div>
+
+</div>
+
+<div class="scoreButtons">
+
+<button
+class="plus"
+onclick="addPoint(${index})">
++1
+</button>
+
+<button
+class="minus"
+onclick="removePoint(${index})">
+-1
+</button>
+
+<button
+class="delete"
+onclick="deleteTeam(${index})">
+Delete
+</button>
+
+</div>
+
+</div>
+
+`;
+
+});
+
+document
+.getElementById("teams")
+.innerHTML=html;
+
+localStorage.setItem(
+"teams",
+JSON.stringify(teams)
+);
+
 }
 
 function declareWinner(){
- teams.sort((a,b)=>b.points-a.points);
- if(!teams.length)return;
- localStorage.setItem('winner',teams[0].name);
- localStorage.setItem('showWinner','true');
+
+if(
+teams.length===0
+) return;
+
+teams.sort(
+(a,b)=>
+b.points-a.points
+);
+
+localStorage.setItem(
+"winner",
+teams[0].name
+);
+
+localStorage.setItem(
+"showWinner",
+"true"
+);
+
+alert(
+"Winner Declared: "
++
+teams[0].name
+);
+
 }
 
 function openViewer(){
- const mobile=/Android|iPhone|iPad|Tablet/i.test(navigator.userAgent);
- if(mobile){
-   window.open('viewer.html','_blank');
- }else{
-   window.open('viewer.html','ScoreboardViewer','width=1400,height=900,menubar=no,toolbar=no,location=no,status=no');
- }
+
+const mobile =
+/Android|iPhone|iPad|Tablet/i
+.test(
+navigator.userAgent
+);
+
+if(mobile){
+
+window.open(
+"viewer.html",
+"_blank"
+);
+
+}else{
+
+window.open(
+"viewer.html",
+"ScoreboardViewer",
+"width=1600,height=900,toolbar=no,menubar=no,status=no"
+);
+
 }
+
+}
+
 render();
+
 </script>
+
 </body>
 </html>
