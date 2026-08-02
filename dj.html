@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kids Music Remix Station</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, sans-serif;
+}
+
+body{
+    overflow:hidden;
+    background:linear-gradient(-45deg,#ff9800,#ff5722,#ffb300,#ff7043);
+    background-size:400% 400%;
+    animation:bgMove 12s ease infinite;
+    height:100vh;
+}
+
+@keyframes bgMove{
+    0%{background-position:0% 50%;}
+    50%{background-position:100% 50%;}
+    100%{background-position:0% 50%;}
+}
+
+#app{
+    height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:15px;
+    padding:15px;
+}
+
+h1{
+    color:white;
+    font-size:clamp(30px,5vw,70px);
+    text-shadow:0 3px 10px rgba(0,0,0,.3);
+}
+
+#status{
+    color:white;
+    font-size:22px;
+    font-weight:bold;
+}
+
+canvas{
+    width:min(90vw,1000px);
+    height:260px;
+    background:rgba(255,255,255,.15);
+    border-radius:30px;
+    backdrop-filter:blur(12px);
+}
+
+.controls{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:12px;
+    width:min(1000px,95vw);
+}
+
+button{
+    border:none;
+    border-radius:20px;
+    padding:20px;
+    font-size:22px;
+    font-weight:bold;
+    cursor:pointer;
+    background:white;
+    transition:.2s;
+}
+
+button:hover{
+    transform:scale(1.05);
+}
+
+button.active{
+    background:#00e676;
+}
+
+#random{
+    background:#ffeb3b;
+    font-size:28px;
+}
+
+#fullscreen{
+    background:#03a9f4;
+    color:white;
+}
+
+#start{
+    background:#00e676;
+    font-size:30px;
+}
+
+.songBox{
+    color:white;
+    font-size:24px;
+    text-align:center;
+    font-weight:bold;
+}
+</style>
+</head>
+<body>
+
+<div id="app">
+
+<h1>🎵 KIDS REMIX STATION 🎵</h1>
+
+<div id="status">
+Press START to Detect Music
+</div>
+
+<div class="songBox">
+Live Music Detection & Remix Effects
+</div>
+
+<canvas id="visualizer"></canvas>
+
+<div class="controls">
+
+<button id="start">START</button>
+
+<button id="bass">BASS BOOST</button>
+
+<button id="echo">ECHO</button>
+
+<button id="robot">ROBOT</button>
+
+<button id="chipmunk">CHIPMUNK</button>
+
+<button id="slow">SLOW</button>
+
+<button id="fast">FAST</button>
+
+<button id="beat">DANCE BEAT</button>
+
+<button id="random">🎲 RANDOM REMIX</button>
+
+<button id="fullscreen">FULLSCREEN</button>
+
+</div>
+
+</div>
+
+<script>
+const canvas=document.getElementById("visualizer");
+const ctx=canvas.getContext("2d");
+
+function resize(){
+canvas.width=canvas.offsetWidth;
+canvas.height=canvas.offsetHeight;
+}
+resize();
+window.addEventListener("resize",resize);
+
+let audioContext;
+let analyser;
+let microphone;
+let dataArray;
+
+let bassOn=false;
+let echoOn=false;
+let robotOn=false;
+let beatOn=false;
+
+let filterNode;
+let delayNode;
+let gainNode;
+
+async function startAudio(){
+
+try{
+
+audioContext=new(window.AudioContext||window.webkitAudioContext)();
+
+const stream=await navigator.mediaDevices.getUserMedia({
+audio:true
+});
+
+microphone=audioContext.createMediaStreamSource(stream);
+
+analyser=audioContext.createAnalyser();
+analyser.fftSize=256;
+
+const destination=audioContext.destination;
+
+gainNode=audioContext.createGain();
+filterNode=audioContext.createBiquadFilter();
+delayNode=audioContext.createDelay();
+
+filterNode.type="lowshelf";
+filterNode.frequency.value=200;
+filterNode.gain.value=0;
+
+delayNode.delayTime.value=0.25;
+
+microphone.connect(filterNode);
+filterNode.connect(delayNode);
+delayNode.connect(gainNode);
+
+gainNode.connect(analyser);
+gainNode.connect(destination);
+
+dataArray=new Uint8Array(analyser.frequencyBinCount);
+
+document.getElementById("status").innerHTML=
+"🎵 Listening to Music...";
+
+animate();
+
+}
+catch(e){
+alert("Microphone permission needed.");
+}
+}
+
+function animate(){
+
+requestAnimationFrame(animate);
+
+analyser.getByteFrequencyData(dataArray);
+
+ctx.clearRect(0,0,canvas.width,canvas.height);
+
+const barWidth=canvas.width/dataArray.length;
+
+for(let i=0;i<dataArray.length;i++){
+
+let h=dataArray[i]*0.8;
+
+ctx.fillStyle=
+`hsl(${i*5},100%,60%)`;
+
+ctx.fillRect(
+i*barWidth,
+canvas.height-h,
+barWidth-2,
+h
+);
+
+}
+}
+
+document.getElementById("start")
+.onclick=startAudio;
+
+document.getElementById("bass")
+.onclick=function(){
+
+bassOn=!bassOn;
+
+filterNode.gain.value=bassOn?25:0;
+
+this.classList.toggle("active");
+};
+
+document.getElementById("echo")
+.onclick=function(){
+
+echoOn=!echoOn;
+
+delayNode.delayTime.value=
+echoOn?0.35:0;
+
+this.classList.toggle("active");
+};
+
+document.getElementById("robot")
+.onclick=function(){
+
+robotOn=!robotOn;
+
+if(robotOn){
+filterNode.type="bandpass";
+filterNode.frequency.value=900;
+}
+else{
+filterNode.type="lowshelf";
+filterNode.frequency.value=200;
+}
+
+this.classList.toggle("active");
+};
+
+document.getElementById("chipmunk")
+.onclick=function(){
+
+if(audioContext){
+audioContext.resume();
+}
+
+this.classList.toggle("active");
+};
+
+document.getElementById("slow")
+.onclick=function(){
+document.body.style.filter="hue-rotate(90deg)";
+};
+
+document.getElementById("fast")
+.onclick=function(){
+document.body.style.filter="hue-rotate(180deg)";
+};
+
+document.getElementById("beat")
+.onclick=function(){
+
+beatOn=!beatOn;
+
+this.classList.toggle("active");
+
+if(beatOn){
+
+let flash=0;
+
+setInterval(()=>{
+if(!beatOn)return;
+flash++;
+document.body.style.transform=
+`scale(${1+(flash%2)*0.01})`;
+},250);
+
+}
+};
+
+document.getElementById("random")
+.onclick=function(){
+
+const buttons=[
+"bass",
+"echo",
+"robot",
+"beat"
+];
+
+buttons.forEach(id=>{
+if(Math.random()>0.5){
+document.getElementById(id).click();
+}
+});
+
+document.body.style.filter=
+`hue-rotate(${Math.random()*360}deg)`;
+};
+
+document.getElementById("fullscreen")
+.onclick=function(){
+
+if(!document.fullscreenElement){
+document.documentElement.requestFullscreen();
+}else{
+document.exitFullscreen();
+}
+
+};
+</script>
+
+</body>
+</html>
