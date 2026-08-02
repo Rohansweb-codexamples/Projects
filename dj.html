@@ -2,363 +2,335 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Kids Music Remix Station</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kids DJ Remix Station</title>
 
 <style>
 *{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:Arial, sans-serif;
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
 }
 
 body{
-    overflow:hidden;
-    background:linear-gradient(-45deg,#ff9800,#ff5722,#ffb300,#ff7043);
-    background-size:400% 400%;
-    animation:bgMove 12s ease infinite;
-    height:100vh;
-}
-
-@keyframes bgMove{
-    0%{background-position:0% 50%;}
-    50%{background-position:100% 50%;}
-    100%{background-position:0% 50%;}
-}
-
-#app{
-    height:100vh;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    gap:15px;
-    padding:15px;
+height:100vh;
+overflow:hidden;
+background:linear-gradient(135deg,#ff9800,#ff5722,#ffb300);
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+color:white;
 }
 
 h1{
-    color:white;
-    font-size:clamp(30px,5vw,70px);
-    text-shadow:0 3px 10px rgba(0,0,0,.3);
+font-size:clamp(2rem,4vw,4rem);
+text-shadow:0 3px 10px rgba(0,0,0,.3);
+margin-bottom:10px;
 }
 
-#status{
-    color:white;
-    font-size:22px;
-    font-weight:bold;
-}
-
-canvas{
-    width:min(90vw,1000px);
-    height:260px;
-    background:rgba(255,255,255,.15);
-    border-radius:30px;
-    backdrop-filter:blur(12px);
+#visualizer{
+width:90%;
+height:220px;
+background:rgba(255,255,255,.15);
+border-radius:25px;
+backdrop-filter:blur(10px);
 }
 
 .controls{
-    display:grid;
-    grid-template-columns:repeat(4,1fr);
-    gap:12px;
-    width:min(1000px,95vw);
+width:95%;
+max-width:1200px;
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+gap:12px;
+margin-top:15px;
 }
 
-button{
-    border:none;
-    border-radius:20px;
-    padding:20px;
-    font-size:22px;
-    font-weight:bold;
-    cursor:pointer;
-    background:white;
-    transition:.2s;
+button,label{
+border:none;
+border-radius:20px;
+padding:20px;
+font-size:1.2rem;
+font-weight:bold;
+cursor:pointer;
+text-align:center;
+background:white;
+color:#ff5722;
+transition:.2s;
 }
 
-button:hover{
-    transform:scale(1.05);
+button:hover,label:hover{
+transform:scale(1.05);
 }
 
-button.active{
-    background:#00e676;
+.djwheel{
+width:260px;
+height:260px;
+border-radius:50%;
+background:
+radial-gradient(circle,#333 0,#111 40%,#000 100%);
+border:12px solid white;
+margin:15px;
+position:relative;
+animation:spin 8s linear infinite;
 }
 
-#random{
-    background:#ffeb3b;
-    font-size:28px;
+.djwheel::after{
+content:'';
+position:absolute;
+width:40px;
+height:40px;
+background:#ff9800;
+border-radius:50%;
+left:50%;
+top:50%;
+transform:translate(-50%,-50%);
 }
 
-#fullscreen{
-    background:#03a9f4;
-    color:white;
+@keyframes spin{
+from{transform:rotate(0deg);}
+to{transform:rotate(360deg);}
 }
 
-#start{
-    background:#00e676;
-    font-size:30px;
+input[type=file]{
+display:none;
 }
 
-.songBox{
-    color:white;
-    font-size:24px;
-    text-align:center;
-    font-weight:bold;
+.active{
+background:#00e676;
+color:black;
+}
+
+#status{
+font-size:1.2rem;
+margin-bottom:10px;
 }
 </style>
 </head>
 <body>
 
-<div id="app">
+<h1>🎵 KIDS DJ REMIX STATION 🎵</h1>
 
-<h1>🎵 KIDS REMIX STATION 🎵</h1>
-
-<div id="status">
-Press START to Detect Music
-</div>
-
-<div class="songBox">
-Live Music Detection & Remix Effects
-</div>
+<div id="status">Load a music file to start</div>
 
 <canvas id="visualizer"></canvas>
 
+<div class="djwheel"></div>
+
 <div class="controls">
 
-<button id="start">START</button>
+<label for="fileInput">
+LOAD SONG
+</label>
 
-<button id="bass">BASS BOOST</button>
+<input id="fileInput" type="file" accept="audio/*">
 
-<button id="echo">ECHO</button>
-
-<button id="robot">ROBOT</button>
-
-<button id="chipmunk">CHIPMUNK</button>
-
-<button id="slow">SLOW</button>
-
-<button id="fast">FAST</button>
-
-<button id="beat">DANCE BEAT</button>
-
-<button id="random">🎲 RANDOM REMIX</button>
-
-<button id="fullscreen">FULLSCREEN</button>
+<button id="playBtn">PLAY</button>
+<button id="bassBtn">BASS BOOST</button>
+<button id="echoBtn">ECHO</button>
+<button id="robotBtn">ROBOT</button>
+<button id="chipBtn">CHIPMUNK</button>
+<button id="slowBtn">SLOW</button>
+<button id="fastBtn">FAST</button>
+<button id="randomBtn">RANDOM MIX</button>
+<button id="fullscreenBtn">FULLSCREEN</button>
 
 </div>
 
-</div>
+<audio id="audio"></audio>
 
 <script>
-const canvas=document.getElementById("visualizer");
-const ctx=canvas.getContext("2d");
+const audio=document.getElementById('audio');
+const fileInput=document.getElementById('fileInput');
+const playBtn=document.getElementById('playBtn');
+const status=document.getElementById('status');
 
-function resize(){
-canvas.width=canvas.offsetWidth;
-canvas.height=canvas.offsetHeight;
-}
-resize();
-window.addEventListener("resize",resize);
-
-let audioContext;
+let audioCtx;
+let source;
 let analyser;
-let microphone;
-let dataArray;
-
-let bassOn=false;
-let echoOn=false;
-let robotOn=false;
-let beatOn=false;
-
-let filterNode;
+let bassFilter;
 let delayNode;
-let gainNode;
+let robotFilter;
 
-async function startAudio(){
+function setupAudio(){
 
-try{
+audioCtx=new(window.AudioContext||window.webkitAudioContext)();
 
-audioContext=new(window.AudioContext||window.webkitAudioContext)();
+source=audioCtx.createMediaElementSource(audio);
 
-const stream=await navigator.mediaDevices.getUserMedia({
-audio:true
-});
-
-microphone=audioContext.createMediaStreamSource(stream);
-
-analyser=audioContext.createAnalyser();
+analyser=audioCtx.createAnalyser();
 analyser.fftSize=256;
 
-const destination=audioContext.destination;
+bassFilter=audioCtx.createBiquadFilter();
+bassFilter.type="lowshelf";
+bassFilter.frequency.value=200;
+bassFilter.gain.value=0;
 
-gainNode=audioContext.createGain();
-filterNode=audioContext.createBiquadFilter();
-delayNode=audioContext.createDelay();
+robotFilter=audioCtx.createBiquadFilter();
+robotFilter.type="bandpass";
+robotFilter.frequency.value=1000;
 
-filterNode.type="lowshelf";
-filterNode.frequency.value=200;
-filterNode.gain.value=0;
+delayNode=audioCtx.createDelay();
+delayNode.delayTime.value=0;
 
-delayNode.delayTime.value=0.25;
+source.connect(bassFilter);
+bassFilter.connect(delayNode);
+delayNode.connect(analyser);
+analyser.connect(audioCtx.destination);
 
-microphone.connect(filterNode);
-filterNode.connect(delayNode);
-delayNode.connect(gainNode);
-
-gainNode.connect(analyser);
-gainNode.connect(destination);
-
-dataArray=new Uint8Array(analyser.frequencyBinCount);
-
-document.getElementById("status").innerHTML=
-"🎵 Listening to Music...";
-
-animate();
-
-}
-catch(e){
-alert("Microphone permission needed.");
-}
+drawVisualizer();
 }
 
-function animate(){
+fileInput.addEventListener('change',e=>{
 
-requestAnimationFrame(animate);
+const file=e.target.files[0];
+if(!file) return;
 
-analyser.getByteFrequencyData(dataArray);
+audio.src=URL.createObjectURL(file);
+status.textContent="Loaded: "+file.name;
 
-ctx.clearRect(0,0,canvas.width,canvas.height);
-
-const barWidth=canvas.width/dataArray.length;
-
-for(let i=0;i<dataArray.length;i++){
-
-let h=dataArray[i]*0.8;
-
-ctx.fillStyle=
-`hsl(${i*5},100%,60%)`;
-
-ctx.fillRect(
-i*barWidth,
-canvas.height-h,
-barWidth-2,
-h
-);
-
-}
-}
-
-document.getElementById("start")
-.onclick=startAudio;
-
-document.getElementById("bass")
-.onclick=function(){
-
-bassOn=!bassOn;
-
-filterNode.gain.value=bassOn?25:0;
-
-this.classList.toggle("active");
-};
-
-document.getElementById("echo")
-.onclick=function(){
-
-echoOn=!echoOn;
-
-delayNode.delayTime.value=
-echoOn?0.35:0;
-
-this.classList.toggle("active");
-};
-
-document.getElementById("robot")
-.onclick=function(){
-
-robotOn=!robotOn;
-
-if(robotOn){
-filterNode.type="bandpass";
-filterNode.frequency.value=900;
-}
-else{
-filterNode.type="lowshelf";
-filterNode.frequency.value=200;
-}
-
-this.classList.toggle("active");
-};
-
-document.getElementById("chipmunk")
-.onclick=function(){
-
-if(audioContext){
-audioContext.resume();
-}
-
-this.classList.toggle("active");
-};
-
-document.getElementById("slow")
-.onclick=function(){
-document.body.style.filter="hue-rotate(90deg)";
-};
-
-document.getElementById("fast")
-.onclick=function(){
-document.body.style.filter="hue-rotate(180deg)";
-};
-
-document.getElementById("beat")
-.onclick=function(){
-
-beatOn=!beatOn;
-
-this.classList.toggle("active");
-
-if(beatOn){
-
-let flash=0;
-
-setInterval(()=>{
-if(!beatOn)return;
-flash++;
-document.body.style.transform=
-`scale(${1+(flash%2)*0.01})`;
-},250);
-
-}
-};
-
-document.getElementById("random")
-.onclick=function(){
-
-const buttons=[
-"bass",
-"echo",
-"robot",
-"beat"
-];
-
-buttons.forEach(id=>{
-if(Math.random()>0.5){
-document.getElementById(id).click();
+if(!audioCtx){
+setupAudio();
 }
 });
+
+playBtn.onclick=()=>{
+if(audio.paused){
+audio.play();
+playBtn.textContent="PAUSE";
+}else{
+audio.pause();
+playBtn.textContent="PLAY";
+}
+};
+
+document.getElementById("bassBtn").onclick=function(){
+if(bassFilter.gain.value===0){
+bassFilter.gain.value=20;
+this.classList.add("active");
+}else{
+bassFilter.gain.value=0;
+this.classList.remove("active");
+}
+};
+
+document.getElementById("echoBtn").onclick=function(){
+if(delayNode.delayTime.value===0){
+delayNode.delayTime.value=.3;
+this.classList.add("active");
+}else{
+delayNode.delayTime.value=0;
+this.classList.remove("active");
+}
+};
+
+document.getElementById("robotBtn").onclick=function(){
+
+if(this.classList.contains("active")){
+
+source.disconnect();
+
+source.connect(bassFilter);
+bassFilter.connect(delayNode);
+delayNode.connect(analyser);
+
+this.classList.remove("active");
+
+}else{
+
+source.disconnect();
+
+source.connect(robotFilter);
+robotFilter.connect(delayNode);
+delayNode.connect(analyser);
+
+this.classList.add("active");
+}
+};
+
+document.getElementById("chipBtn").onclick=function(){
+
+audio.playbackRate=1.5;
+this.classList.add("active");
+};
+
+document.getElementById("slowBtn").onclick=function(){
+audio.playbackRate=.75;
+};
+
+document.getElementById("fastBtn").onclick=function(){
+audio.playbackRate=1.25;
+};
+
+document.getElementById("randomBtn").onclick=function(){
+
+bassFilter.gain.value=Math.random()*30;
+
+delayNode.delayTime.value=Math.random()*0.5;
+
+audio.playbackRate=
+0.75+Math.random()*1.0;
 
 document.body.style.filter=
 `hue-rotate(${Math.random()*360}deg)`;
 };
 
-document.getElementById("fullscreen")
-.onclick=function(){
+document.getElementById("fullscreenBtn").onclick=()=>{
 
 if(!document.fullscreenElement){
 document.documentElement.requestFullscreen();
 }else{
 document.exitFullscreen();
 }
-
 };
+
+function drawVisualizer(){
+
+const canvas=document.getElementById('visualizer');
+const ctx=canvas.getContext('2d');
+
+function resize(){
+canvas.width=canvas.clientWidth;
+canvas.height=canvas.clientHeight;
+}
+resize();
+window.addEventListener('resize',resize);
+
+const bufferLength=analyser.frequencyBinCount;
+const dataArray=new Uint8Array(bufferLength);
+
+function draw(){
+
+requestAnimationFrame(draw);
+
+analyser.getByteFrequencyData(dataArray);
+
+ctx.clearRect(0,0,canvas.width,canvas.height);
+
+const barWidth=(canvas.width/bufferLength)*2;
+
+let x=0;
+
+for(let i=0;i<bufferLength;i++){
+
+let h=dataArray[i];
+
+ctx.fillStyle=`hsl(${i*5},100%,50%)`;
+
+ctx.fillRect(
+x,
+canvas.height-h,
+barWidth,
+h
+);
+
+x+=barWidth+1;
+}
+}
+
+draw();
+}
 </script>
 
 </body>
