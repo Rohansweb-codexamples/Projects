@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rohans Web Viewer</title>
+
+<style>
+html,body{
+margin:0;
+width:100%;
+height:100%;
+overflow:hidden;
+background:black;
+font-family:Arial,sans-serif;
+}
+
+#bg{
+position:fixed;
+inset:0;
+background-size:cover;
+background-position:center;
+filter:blur(30px);
+transform:scale(1.2);
+opacity:.35;
+}
+
+.content{
+position:absolute;
+inset:0;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+color:white;
+}
+
+img{
+width:300px;
+height:300px;
+object-fit:cover;
+border-radius:30px;
+box-shadow:0 0 50px rgba(0,0,0,.5);
+}
+
+h1{
+margin:20px 0;
+font-size:50px;
+}
+
+#bars{
+position:absolute;
+bottom:0;
+left:0;
+right:0;
+height:40%;
+display:flex;
+align-items:flex-end;
+gap:3px;
+padding:0 10px;
+}
+
+.bar{
+flex:1;
+background:linear-gradient(
+to top,
+#ff6f00,
+#ffd54f
+);
+border-radius:5px 5px 0 0;
+}
+</style>
+</head>
+<body>
+
+<div id="bg"></div>
+
+<div class="content">
+
+<img id="cover"
+src="https://picsum.photos/500">
+
+<h1 id="title">
+Waiting For Controller...
+</h1>
+
+</div>
+
+<div id="bars"></div>
+
+<script>
+const channel=
+new BroadcastChannel(
+"rohans_display"
+);
+
+const barsContainer=
+document.getElementById(
+"bars"
+);
+
+const bars=[];
+
+for(let i=0;i<48;i++){
+
+const div=
+document.createElement("div");
+
+div.className="bar";
+
+div.style.height="20px";
+
+barsContainer.appendChild(div);
+
+bars.push(div);
+
+}
+
+channel.onmessage=e=>{
+
+const data=e.data;
+
+if(data.type==="info"){
+
+document.getElementById(
+"title"
+).textContent=
+data.title;
+
+document.getElementById(
+"cover"
+).src=
+data.artwork;
+
+document.getElementById(
+"bg"
+).style.backgroundImage=
+`url(${data.artwork})`;
+
+}
+
+if(data.type==="visualiser"){
+
+data.bars.forEach(
+(value,index)=>{
+
+if(bars[index]){
+
+bars[index].style.height=
+value+"px";
+
+}
+
+});
+
+}
+
+};
+</script>
+
+</body>
+</html>
