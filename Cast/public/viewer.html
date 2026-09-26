@@ -26,7 +26,7 @@ const modes=["Galaxy Space","Fireworks","Neon Tunnel","Sun","Starfield","Aurora"
 const socket=io({transports:["websocket","polling"],reconnection:true,reconnectionAttempts:Infinity,reconnectionDelay:1000,timeout:10000});
 const bgCanvas=document.getElementById("bgCanvas"),bg=bgCanvas.getContext("2d"),fxCanvas=document.getElementById("fxCanvas"),fx=fxCanvas.getContext("2d");
 const picture=document.getElementById("picture"),statusText=document.getElementById("statusText"),dot=document.getElementById("dot"),modeText=document.getElementById("mode");
-let mode=0,auto=true,audioLevel=0,smooth=0,scale=1,rotation=0,last=performance.now(),modeTimer=0,nextMode=22000;
+let mode=0,auto=true,audioLevel=0,smooth=0,scale=1,rotation=0,last=performance.now(),modeTimer=0,nextMode=22000,speed=1,intensity=1,brightness=1,color="#ff9800",effect="none",audioReactive=true,lights=true;
 const stars=Array.from({length:360},()=>({x:Math.random(),y:Math.random(),z:Math.random(),speed:.3+Math.random()*1.7}));
 let fireworks=[];
 
@@ -38,14 +38,16 @@ function hsla(h,s,l,a=1){return `hsla(${h},${s}%,${l}%,${a})`}
 socket.on("connect",()=>{statusText.textContent="TV Connected";dot.style.background="#32d74b";socket.emit("identify","viewer")});
 socket.on("disconnect",()=>{statusText.textContent="Disconnected - reconnecting...";dot.style.background="#f33"});
 socket.on("connect_error",e=>{statusText.textContent="Connection error"});
-socket.on("initial-state",s=>{if(s){if(s.image)showImage(s.image);audioLevel=Number(s.audioLevel)||0;scale=Number(s.scale)||1;rotation=Number(s.rotation)||0}});
+socket.on("initial-state",s=>{if(s){applyState(s);if(s.image)showImage(s.image)}});
 socket.on("controller-image",d=>{if(d?.image)showImage(d.image)});
 socket.on("audio-level",d=>{audioLevel=Number(d?.level)||0});
 socket.on("image-scale",d=>{if(Number.isFinite(Number(d?.scale))){scale=Number(d.scale);applyPicture()}});
 socket.on("image-rotation",d=>{if(Number.isFinite(Number(d?.rotation))){rotation=Number(d.rotation);applyPicture()}});
+socket.on("display-settings",d=>applyState(d));
 socket.on("animation-mode",d=>{if(Number.isInteger(Number(d?.mode)))setMode(Number(d.mode))});
 socket.on("animation-auto",d=>{auto=Boolean(d?.enabled)});
-socket.on("reset-display",()=>{picture.removeAttribute("src");picture.style.opacity=0;scale=1;rotation=0;audioLevel=0;setMode(0)});
+socket.on("reset-display",()=>{picture.removeAttribute("src");picture.style.opacity=0;scale=1;rotation=0;audioLevel=0;speed=1;intensity=1;brightness=1;color="#ff9800";effect="none";lights=true;setMode(0)});
+function applyState(s){if(!s)return;if(s.image!==undefined&&s.image)showImage(s.image);if(Number.isFinite(+s.scale))scale=+s.scale;if(Number.isFinite(+s.rotation))rotation=+s.rotation;if(Number.isInteger(+s.mode))setMode(+s.mode);if(typeof s.auto==="boolean")auto=s.auto;if(Number.isFinite(+s.speed))speed=+s.speed;if(Number.isFinite(+s.intensity))intensity=+s.intensity;if(Number.isFinite(+s.brightness))brightness=+s.brightness;if(typeof s.color==="string")color=s.color;if(typeof s.effect==="string")effect=s.effect;if(typeof s.audioReactive==="boolean")audioReactive=s.audioReactive;if(typeof s.lights==="boolean")lights=s.lights;applyPicture()}
 
 function showImage(src){picture.src=src;picture.onload=()=>picture.style.opacity=1;applyPicture()}
 function applyPicture(){picture.style.transform=`translate(-50%,-50%) scale(${scale}) rotate(${rotation}deg)`}
@@ -71,7 +73,7 @@ function background(t,p){
  else if(mode===8){let g=bg.createLinearGradient(0,0,w,h);g.addColorStop(0,hsla((t*.03)%360,90,30));g.addColorStop(.5,hsla((t*.05+130)%360,90,35));g.addColorStop(1,hsla((t*.02+260)%360,90,25));bg.fillStyle=g;bg.fillRect(0,0,w,h);for(let i=0;i<10;i++){bg.strokeStyle=hsla((t*.1+i*35)%360,100,65,.3);bg.lineWidth=30;bg.beginPath();bg.arc(cx,cy,100+i*90+Math.sin(t*.002+i)*40*(1+p),0,7);bg.stroke()}}
  else {bg.fillStyle="rgba(0,0,0,.28)";bg.fillRect(0,0,w,h);stars.forEach(s=>{s.z-=.012+s.speed*.008+p*.04;if(s.z<.02)s.z=1;let x=(s.x-.5)*w/s.z+cx,y=(s.y-.5)*h/s.z+cy;bg.strokeStyle="rgba(255,255,255,.9)";bg.lineWidth=2;bg.beginPath();bg.moveTo(x,y);bg.lineTo(cx+(x-cx)*(1+.08/s.z),cy+(y-cy)*(1+.08/s.z));bg.stroke()})}
 }
-function draw(t){const dt=t-last;last=t;modeTimer+=dt;if(auto&&modeTimer>nextMode)setMode(mode+1);smooth+=(audioLevel-smooth)*.12;const p=Math.min(1,smooth/255);background(t,p);fx.clearRect(0,0,innerWidth,innerHeight);fx.beginPath();for(let x=0;x<=innerWidth;x+=8){let y=innerHeight*.86+Math.sin(x*.018+t*.002)*(8+p*90);x?fx.lineTo(x,y):fx.moveTo(x,y)}fx.strokeStyle="rgba(255,220,80,.5)";fx.lineWidth=2+p*5;fx.stroke();document.getElementById("glow").style.transform=`scale(${1+p*.12})`;picture.style.filter=`brightness(${1+p*.25})`;requestAnimationFrame(draw)}
+function draw(t){const dt=t-last;last=t;modeTimer+=dt*speed;if(auto&&modeTimer>nextMode)setMode(mode+1);smooth+=(audioLevel-smooth)*.12;const p=Math.min(1,(audioReactive?smooth:0)/255)*intensity;document.getElementById("scene").style.filter=`brightness(${brightness})`;document.getElementById("glow").style.background=lights?`radial-gradient(circle,${color}66,transparent 58%)`:"none";if(effect==="rainbow")document.getElementById("scene").style.background=`linear-gradient(120deg,hsl(${(t*.04)%360} 90% 15%),hsl(${(t*.04+120)%360} 90% 15%),hsl(${(t*.04+240)%360} 90% 15%))`;else document.getElementById("scene").style.background="#000";background(t,p);fx.clearRect(0,0,innerWidth,innerHeight);fx.beginPath();for(let x=0;x<=innerWidth;x+=8){let y=innerHeight*.86+Math.sin(x*.018+t*.002)*(8+p*90);x?fx.lineTo(x,y):fx.moveTo(x,y)}fx.strokeStyle="rgba(255,220,80,.5)";fx.lineWidth=2+p*5;fx.stroke();document.getElementById("glow").style.transform=`scale(${1+p*.12})`;picture.style.filter=`brightness(${1+p*.25})`;requestAnimationFrame(draw)}
 requestAnimationFrame(draw);
 setInterval(()=>document.getElementById("clock").textContent=new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}),1000);
 </script>
