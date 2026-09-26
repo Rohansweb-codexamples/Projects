@@ -1,345 +1,176 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Rohans Web TV Viewer</title>
-
 <style>
-*{
-    box-sizing:border-box;
-}
-
-html,body{
-    margin:0;
-    width:100%;
-    height:100%;
-    overflow:hidden;
-    background:#000;
-    font-family:Arial,sans-serif;
-}
-
-body{
-    cursor:none;
-}
-
-/* MOVING BACKGROUND */
-#bg{
-    position:fixed;
-    inset:-30%;
-    background:
-        radial-gradient(
-            circle at 50% 50%,
-            #fff3a3 0%,
-            #ffd43b 15%,
-            #ff9800 38%,
-            #ff4d00 62%,
-            #080808 100%
-        );
-    filter:blur(65px);
-    transform:scale(1);
-    will-change:transform;
-}
-
-/* EXTRA MOVING LIGHT */
-#light{
-    position:fixed;
-    width:45vw;
-    height:45vw;
-    left:50%;
-    top:50%;
-    transform:translate(-50%,-50%);
-    border-radius:50%;
-    background:
-        radial-gradient(
-            circle,
-            rgba(255,255,255,.25),
-            rgba(255,170,0,.12),
-            transparent 70%
-        );
-    filter:blur(30px);
-    pointer-events:none;
-}
-
-/* VISUALISER */
-#canvas{
-    position:absolute;
-    inset:0;
-    width:100%;
-    height:100%;
-    pointer-events:none;
-}
-
-/* IMAGE */
-#picture{
-    position:absolute;
-    top:50%;
-    left:50%;
-
-    max-width:88%;
-    max-height:88%;
-
-    object-fit:contain;
-
-    border-radius:24px;
-
-    box-shadow:
-        0 0 35px rgba(255,255,255,.18),
-        0 0 90px rgba(255,140,0,.35);
-
-    opacity:0;
-
-    transition:
-        opacity .5s ease,
-        filter .15s linear;
-
-    will-change:
-        transform,
-        filter;
-}
-
-/* STATUS */
-#status{
-    position:absolute;
-    top:20px;
-    left:20px;
-
-    padding:11px 17px;
-
-    color:white;
-
-    background:rgba(0,0,0,.45);
-
-    border:1px solid rgba(255,255,255,.12);
-
-    border-radius:14px;
-
-    backdrop-filter:blur(12px);
-
-    font-size:14px;
-
-    z-index:10;
-}
-
-/* CLOCK */
-#clock{
-    position:absolute;
-    top:20px;
-    right:20px;
-
-    padding:10px 16px;
-
-    color:white;
-
-    background:rgba(0,0,0,.45);
-
-    border-radius:14px;
-
-    backdrop-filter:blur(12px);
-
-    font-size:24px;
-
-    z-index:10;
-}
-
-/* CONNECTION DOT */
-#dot{
-    display:inline-block;
-
-    width:9px;
-    height:9px;
-
-    margin-right:7px;
-
-    border-radius:50%;
-
-    background:#ff3b30;
-}
-
-/* HINT */
-#hint{
-    position:absolute;
-
-    bottom:20px;
-    left:50%;
-
-    transform:translateX(-50%);
-
-    color:white;
-
-    background:rgba(0,0,0,.42);
-
-    padding:11px 18px;
-
-    border-radius:14px;
-
-    backdrop-filter:blur(12px);
-
-    font-size:14px;
-
-    z-index:10;
-
-    opacity:.8;
-
-    transition:
-        opacity .5s ease;
-}
-
-/* HIDE UI AFTER START */
-body.started #hint{
-    opacity:0;
-}
-
-body.started #status{
-    opacity:.35;
-}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;font-family:Arial,sans-serif}
+body{cursor:none}
+#bg{position:fixed;inset:-30%;background:radial-gradient(circle at 50% 50%,#fff3a3 0%,#ffd43b 15%,#ff9800 38%,#ff4d00 62%,#080808 100%);filter:blur(65px);transform:scale(1);will-change:transform}
+#light{position:fixed;width:45vw;height:45vw;left:50%;top:50%;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.25),rgba(255,170,0,.12),transparent 70%);filter:blur(30px);pointer-events:none}
+#canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+#picture{position:absolute;top:50%;left:50%;max-width:88%;max-height:88%;object-fit:contain;border-radius:24px;box-shadow:0 0 35px rgba(255,255,255,.18),0 0 90px rgba(255,140,0,.35);opacity:0;transition:opacity .5s ease,filter .15s linear;will-change:transform,filter}
+#status,#clock,#hint{position:absolute;color:white;background:rgba(0,0,0,.45);backdrop-filter:blur(12px);z-index:10;border-radius:14px}
+#status{top:20px;left:20px;padding:11px 17px;font-size:14px}
+#clock{top:20px;right:20px;padding:10px 16px;font-size:24px}
+#dot{display:inline-block;width:9px;height:9px;margin-right:7px;border-radius:50%;background:#ff3b30}
+#hint{bottom:20px;left:50%;transform:translateX(-50%);padding:11px 18px;font-size:14px;opacity:.8}
+body.started #hint{opacity:0}
+body.started #status{opacity:.35}
 </style>
 </head>
-
 <body>
-
-<div id="bg"></div>
-
-<div id="light"></div>
-
-<canvas id="canvas"></canvas>
-
-<img
-    id="picture"
-    alt=""
->
-
-<div id="status">
-    <span id="dot"></span>
-    <span id="statusText">
-        Connecting...
-    </span>
-</div>
-
-<div id="clock">
-    --:--
-</div>
-
-<div id="hint">
-    TV Remote: ▲▼ scale • ◀▶ rotate • OK fullscreen
-</div>
-
-
+<div id="bg"></div><div id="light"></div><canvas id="canvas"></canvas>
+<img id="picture" alt="">
+<div id="status"><span id="dot"></span><span id="statusText">Connecting...</span></div>
+<div id="clock">--:--</div>
+<div id="hint">TV Remote: ▲▼ scale • ◀▶ rotate • OK fullscreen</div>
 <script src="/socket.io/socket.io.js"></script>
-
 <script>
-
-/* =====================================================
-   SOCKET CONNECTION
-===================================================== */
-
-const socket = io({
+const socket=io({
     transports:["websocket","polling"],
     reconnection:true,
     reconnectionAttempts:Infinity,
     reconnectionDelay:1000,
     timeout:10000
 });
+const bg=document.getElementById("bg");
+const light=document.getElementById("light");
+const picture=document.getElementById("picture");
+const canvas=document.getElementById("canvas");
+const ctx=canvas.getContext("2d");
+const statusText=document.getElementById("statusText");
+const dot=document.getElementById("dot");
 
-
-/* =====================================================
-   ELEMENTS
-===================================================== */
-
-const bg =
-    document.getElementById("bg");
-
-const light =
-    document.getElementById("light");
-
-const picture =
-    document.getElementById("picture");
-
-const canvas =
-    document.getElementById("canvas");
-
-const ctx =
-    canvas.getContext("2d");
-
-const statusText =
-    document.getElementById("statusText");
-
-const dot =
-    document.getElementById("dot");
-
-
-/* =====================================================
-   STATE
-===================================================== */
-
-let audioLevel = 0;
-
-let smoothAudio = 0;
-
-let scale = 1;
-
-let rotation = 0;
-
-let connected = false;
-
-let hasPicture = false;
-
-
-/* =====================================================
-   CANVAS
-===================================================== */
+let audioLevel=0,smoothAudio=0,scale=1,rotation=0;
 
 function resizeCanvas(){
-
-    canvas.width =
-        window.innerWidth;
-
-    canvas.height =
-        window.innerHeight;
-
+    canvas.width=innerWidth;
+    canvas.height=innerHeight;
 }
-
-window.addEventListener(
-    "resize",
-    resizeCanvas
-);
-
+addEventListener("resize",resizeCanvas);
 resizeCanvas();
 
-
-/* =====================================================
-   IDENTIFY AS TV VIEWER
-===================================================== */
-
 function identify(){
+    socket.emit("identify","viewer");
+}
+socket.on("connect",()=>{
+    statusText.textContent="TV Connected";
+    dot.style.background="#32d74b";
+    identify();
+});
+socket.on("disconnect",()=>{
+    statusText.textContent="Disconnected - reconnecting...";
+    dot.style.background="#ff3b30";
+});
+socket.on("connect_error",(err)=>{
+    statusText.textContent="Connection error";
+    console.error("TV socket error:",err);
+});
 
-    socket.emit(
-        "identify",
-        "viewer"
-    );
+socket.on("initial-state",(state)=>{
+    if(!state)return;
+    if(state.image) showImage(state.image);
+    if(Number.isFinite(Number(state.audioLevel))) audioLevel=Number(state.audioLevel);
+    if(Number.isFinite(Number(state.scale))) scale=Number(state.scale);
+    if(Number.isFinite(Number(state.rotation))) rotation=Number(state.rotation);
+});
 
+socket.on("controller-image",(data)=>{
+    if(data && data.image) showImage(data.image);
+});
+socket.on("audio-level",(data)=>{
+    if(data) audioLevel=Number(data.level)||0;
+});
+socket.on("image-scale",(data)=>{
+    if(data && Number.isFinite(Number(data.scale))) scale=Number(data.scale);
+});
+socket.on("image-rotation",(data)=>{
+    if(data && Number.isFinite(Number(data.rotation))) rotation=Number(data.rotation);
+});
+socket.on("reset-display",()=>{
+    picture.removeAttribute("src");
+    picture.style.opacity="0";
+    scale=1;
+    rotation=0;
+    audioLevel=0;
+});
+
+function showImage(src){
+    picture.onload=()=>{
+        picture.style.opacity="1";
+        document.body.classList.add("started");
+    };
+    picture.src=src;
+    applyPicture();
+}
+function applyPicture(){
+    picture.style.transform=`translate(-50%,-50%) scale(${scale}) rotate(${rotation}deg)`;
 }
 
-identify();
+function fullscreen(){
+    const el=document.documentElement;
+    if(!document.fullscreenElement){
+        (el.requestFullscreen||el.webkitRequestFullscreen||el.msRequestFullscreen)?.call(el);
+    }
+}
+function remoteKey(key){
+    if(key==="ArrowUp"){
+        scale=Math.min(3,scale+.1);
+        applyPicture();
+        socket.emit("image-scale",{scale});
+    }else if(key==="ArrowDown"){
+        scale=Math.max(.2,scale-.1);
+        applyPicture();
+        socket.emit("image-scale",{scale});
+    }else if(key==="ArrowLeft"){
+        rotation-=5;
+        applyPicture();
+        socket.emit("image-rotation",{rotation});
+    }else if(key==="ArrowRight"){
+        rotation+=5;
+        applyPicture();
+        socket.emit("image-rotation",{rotation});
+    }else if(key==="Enter" || key==="NumpadEnter"){
+        fullscreen();
+    }
+}
+addEventListener("keydown",(e)=>{
+    if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight","Enter","NumpadEnter"].includes(e.key)){
+        e.preventDefault();
+        remoteKey(e.key);
+    }
+});
 
+function draw(){
+    requestAnimationFrame(draw);
+    smoothAudio += (audioLevel-smoothAudio)*.12;
+    const power=smoothAudio/255;
+    bg.style.transform=`scale(${1+power*1.8}) rotate(${power*12}deg)`;
+    light.style.transform=`translate(-50%,-50%) scale(${1+power*1.5})`;
+    picture.style.filter=`brightness(${1+power*.25}) drop-shadow(0 0 ${20+power*60}px rgba(255,180,30,.45))`;
 
-/* =====================================================
-   CONNECTION
-===================================================== */
+    const w=canvas.width,h=canvas.height;
+    ctx.clearRect(0,0,w,h);
+    ctx.beginPath();
+    const amp=8+power*90;
+    const t=performance.now()*.002;
+    for(let x=0;x<=w;x+=8){
+        const y=h*.82+Math.sin(x*.018+t)*amp+Math.sin(x*.007-t*.7)*amp*.35;
+        if(x===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+    }
+    ctx.strokeStyle="rgba(255,220,80,.7)";
+    ctx.lineWidth=3+power*5;
+    ctx.stroke();
+}
+draw();
 
-socket.on(
-    "connect",
-    () => {
-
-        connected = true;
-
-        statusText.textContent =
-            "TV Connected";
-
-        dot.style.background =
-            "#32d74b";
-
-        /*
-         Tell server again
-```
+setInterval(()=>{
+    document.getElementById("clock").textContent=
+        new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});
+},1000);
+</script>
+</body>
+</html>
