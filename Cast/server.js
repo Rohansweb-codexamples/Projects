@@ -115,7 +115,12 @@ let currentState = {
     color: "#ff9800",
     effect: "none",
     audioReactive: true,
-    lights: true
+    lights: true,
+    message: "",
+    messageVisible: false,
+    announcement: "",
+    announcementVisible: false,
+    screensaver: false
 };
 
 let controllers = 0;
@@ -192,7 +197,7 @@ io.on("connection", (socket) => {
 
     socket.on("display-settings", (data) => {
         if (socket.role !== "controller" || !data || typeof data !== "object") return;
-        const allowed = ["mode","auto","speed","intensity","brightness","color","effect","audioReactive","lights"];
+        const allowed = ["mode","auto","speed","intensity","brightness","color","effect","audioReactive","lights","message","messageVisible","announcement","announcementVisible","screensaver"];
         for (const key of allowed) {
             if (Object.prototype.hasOwnProperty.call(data,key)) currentState[key]=data[key];
         }
@@ -229,7 +234,12 @@ io.on("connection", (socket) => {
             color: "#ff9800",
             effect: "none",
             audioReactive: true,
-            lights: true
+            lights: true,
+            message: "",
+            messageVisible: false,
+            announcement: "",
+            announcementVisible: false,
+            screensaver: false
         };
 
         io.emit("reset-display");
