@@ -1,138 +1,252 @@
+```html
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Rohans Web Display Controller</title>
+<title>Rohans Web Audio Picture Display</title>
 
 <style>
 body{
-margin:0;
-font-family:Arial,sans-serif;
-background:linear-gradient(135deg,#ffb300,#ff6f00);
-color:#111;
-min-height:100vh;
-padding:20px;
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:linear-gradient(135deg,#ffb300,#ff6f00);
+    min-height:100vh;
+    padding:20px;
+    color:#111;
 }
 
-.card{
-background:white;
-border-radius:20px;
-padding:20px;
-max-width:800px;
-margin:auto;
+.panel{
+    max-width:900px;
+    margin:auto;
+    background:white;
+    border-radius:20px;
+    padding:20px;
+}
+
+h1{
+    margin-top:0;
 }
 
 button{
-padding:12px 18px;
-border:none;
-border-radius:12px;
-background:#111;
-color:white;
-cursor:pointer;
+    padding:12px 18px;
+    border:none;
+    border-radius:12px;
+    background:#111;
+    color:white;
+    cursor:pointer;
 }
 
-input{
-width:100%;
-padding:12px;
-border-radius:10px;
-border:1px solid #ccc;
-margin-top:8px;
+input[type=file]{
+    width:100%;
+    margin:15px 0;
 }
 
-#bars{
-height:220px;
-display:flex;
-align-items:flex-end;
-gap:3px;
-margin-top:20px;
+.preview{
+    width:100%;
+    max-height:400px;
+    object-fit:contain;
+    border-radius:15px;
+    background:#eee;
 }
 
-.bar{
-flex:1;
-background:#ff7a00;
-border-radius:4px 4px 0 0;
+.meter{
+    height:25px;
+    background:#ddd;
+    border-radius:20px;
+    overflow:hidden;
+    margin-top:15px;
+}
+
+.fill{
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg,#ff7a00,#ffd54f);
 }
 </style>
 </head>
 <body>
 
-<div class="card">
+<div class="panel">
 
-<h1>Rohans Web Display Controller</h1>
+<h1>Rohans Web TV Picture Controller</h1>
 
 <button onclick="openViewer()">
-Open Viewer
+Open TV Viewer
 </button>
+
+<input id="imageInput"
+       type="file"
+       accept="image/*">
+
+<img id="preview"
+     class="preview">
 
 <br><br>
 
-<label>Track Name</label>
-<input id="trackName" value="My Music">
-
-<br>
-
-<label>Artwork URL</label>
-<input id="artworkUrl" value="https://picsum.photos/500">
-
-<br><br>
-
-<button onclick="sendInfo()">
-Send To Viewer
+<button id="startAudio">
+Start Audio Visualiser
 </button>
 
-<div id="bars"></div>
+<div class="meter">
+    <div id="fill" class="fill"></div>
+</div>
 
 </div>
 
 <script>
-const channel=new BroadcastChannel("rohans_display");
 
-const barsContainer=document.getElementById("bars");
+const channel =
+    new BroadcastChannel(
+        "rohans_tv_display"
+    );
 
-const bars=[];
-
-for(let i=0;i<48;i++){
-const div=document.createElement("div");
-div.className="bar";
-div.style.height="20px";
-barsContainer.appendChild(div);
-bars.push(div);
-}
+let analyser;
+let audioContext;
+let dataArray;
 
 function openViewer(){
-window.open("viewer.html","_blank");
+
+    window.open(
+        "viewer.html",
+        "_blank"
+    );
+
 }
 
-function sendInfo(){
-channel.postMessage({
-type:"info",
-title:document.getElementById("trackName").value,
-artwork:document.getElementById("artworkUrl").value
-});
+document
+.getElementById("imageInput")
+.addEventListener(
+    "change",
+    e=>{
+
+        const file =
+            e.target.files[0];
+
+        if(!file) return;
+
+        const reader =
+            new FileReader();
+
+        reader.onload = ()=>{
+
+            const image =
+                reader.result;
+
+            document
+            .getElementById(
+                "preview"
+            ).src =
+                image;
+
+            channel.postMessage({
+
+                type:"image",
+
+                image:image
+
+            });
+
+        };
+
+        reader.readAsDataURL(file);
+
+    }
+);
+
+document
+.getElementById("startAudio")
+.addEventListener(
+    "click",
+    async ()=>{
+
+        const stream =
+            await navigator
+            .mediaDevices
+            .getUserMedia({
+
+                audio:true
+
+            });
+
+        audioContext =
+            new AudioContext();
+
+        const source =
+            audioContext
+            .createMediaStreamSource(
+                stream
+            );
+
+        analyser =
+            audioContext
+            .createAnalyser();
+
+        analyser.fftSize = 256;
+
+        source.connect(
+            analyser
+        );
+
+        dataArray =
+            new Uint8Array(
+                analyser.frequencyBinCount
+            );
+
+        animateAudio();
+
+    }
+);
+
+function animateAudio(){
+
+    requestAnimationFrame(
+        animateAudio
+    );
+
+    analyser.getByteFrequencyData(
+        dataArray
+    );
+
+    let total = 0;
+
+    for(
+        let i=0;
+        i<dataArray.length;
+        i++
+    ){
+
+        total += dataArray[i];
+
+    }
+
+    const level =
+        total /
+        dataArray.length;
+
+    const percent =
+        Math.min(
+            100,
+            level / 2
+        );
+
+    document
+    .getElementById(
+        "fill"
+    ).style.width =
+        percent + "%";
+
+    channel.postMessage({
+
+        type:"audio",
+
+        level:percent
+
+    });
+
 }
-
-setInterval(()=>{
-
-const values=[];
-
-bars.forEach(bar=>{
-
-const value=20+Math.random()*180;
-
-bar.style.height=value+"px";
-
-values.push(value);
-
-});
-
-channel.postMessage({
-type:"visualiser",
-bars:values
-});
-
-},50);
 </script>
 
 </body>
 </html>
+```
