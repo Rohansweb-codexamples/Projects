@@ -1,137 +1,79 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Rohans Web TV Viewer</title>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Rohans Web TV Display</title>
 <style>
-*{box-sizing:border-box}
-html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;font-family:Arial,sans-serif}
-body{cursor:none}
-#scene{position:fixed;inset:0;overflow:hidden;background:#000}
-#bgCanvas{position:absolute;inset:0;width:100%;height:100%}
-#glow{position:absolute;inset:-20%;background:radial-gradient(circle,rgba(255,255,255,.08),transparent 55%);mix-blend-mode:screen;pointer-events:none}
-#canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
-#picture{position:absolute;top:50%;left:50%;max-width:88%;max-height:82%;object-fit:contain;border-radius:24px;box-shadow:0 0 35px rgba(255,255,255,.18),0 0 100px rgba(255,140,0,.4);opacity:0;transition:opacity .5s ease,filter .15s linear;will-change:transform,filter}
-#status,#clock,#hint,#mode{position:absolute;color:white;background:rgba(0,0,0,.42);backdrop-filter:blur(12px);z-index:10;border-radius:14px}
-#status{top:20px;left:20px;padding:11px 17px;font-size:14px}
-#clock{top:20px;right:20px;padding:10px 16px;font-size:24px}
-#mode{bottom:20px;right:20px;padding:10px 15px;font-size:13px}
-#dot{display:inline-block;width:9px;height:9px;margin-right:7px;border-radius:50%;background:#ff3b30}
-#hint{bottom:20px;left:50%;transform:translateX(-50%);padding:11px 18px;font-size:14px;opacity:.8}
-body.started #hint{opacity:0}
-body.started #status{opacity:.35}
-</style></head><body>
-<div id="scene"><canvas id="bgCanvas"></canvas><div id="glow"></div><canvas id="canvas"></canvas><img id="picture" alt=""></div>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;font-family:Arial,sans-serif}body{cursor:none}
+#scene{position:fixed;inset:0;background:#000;overflow:hidden}
+canvas{position:absolute;inset:0;width:100%;height:100%}
+#glow{position:absolute;inset:-20%;background:radial-gradient(circle,rgba(255,255,255,.1),transparent 55%);mix-blend-mode:screen}
+#picture{position:absolute;top:50%;left:50%;max-width:88%;max-height:82%;object-fit:contain;border-radius:24px;opacity:0;transform:translate(-50%,-50%);transition:opacity .35s;box-shadow:0 0 40px rgba(255,255,255,.2)}
+#status,#clock,#mode,#hint{position:absolute;color:#fff;background:rgba(0,0,0,.48);backdrop-filter:blur(10px);border-radius:13px;z-index:5}
+#status{top:18px;left:18px;padding:10px 15px}#clock{top:18px;right:18px;padding:9px 14px;font-size:23px}#mode{bottom:18px;right:18px;padding:9px 14px}#hint{bottom:18px;left:50%;transform:translateX(-50%);padding:9px 14px;opacity:.7}
+#dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#f33;margin-right:7px}
+</style>
+</head>
+<body>
+<div id="scene"><canvas id="bgCanvas"></canvas><div id="glow"></div><canvas id="fxCanvas"></canvas><img id="picture"></div>
 <div id="status"><span id="dot"></span><span id="statusText">Connecting...</span></div>
 <div id="clock">--:--</div><div id="mode">Galaxy Space</div>
-<div id="hint">TV Remote: ▲▼ scale • ◀▶ rotate • OK fullscreen</div>
+<div id="hint">Remote: arrows control picture • Enter fullscreen</div>
+<script src="/socket.io/socket.io.js"></script>
 <script>
-const socket=io({transports:["websocket","polling"],reconnection:true,reconnectionAttempts:Infinity,reconnectionDelay:1000,timeout:10000});
-const scene=document.getElementById("scene");
-const bgCanvas=document.getElementById("bgCanvas");
-const bg=bgCanvas.getContext("2d");
-const canvas=document.getElementById("canvas");
-const ctx=canvas.getContext("2d");
-const picture=document.getElementById("picture");
-const statusText=document.getElementById("statusText");
-const dot=document.getElementById("dot");
-const modeText=document.getElementById("mode");
-let audioLevel=0,smoothAudio=0,scale=1,rotation=0,mode=0,modeTimer=0,lastTime=0;
 const modes=["Galaxy Space","Fireworks","Neon Tunnel","Sun","Starfield","Aurora","Cosmic Waves","Meteor Travel","Plasma","Hyperspace"];
+const socket=io({transports:["websocket","polling"],reconnection:true,reconnectionAttempts:Infinity,reconnectionDelay:1000,timeout:10000});
+const bgCanvas=document.getElementById("bgCanvas"),bg=bgCanvas.getContext("2d"),fxCanvas=document.getElementById("fxCanvas"),fx=fxCanvas.getContext("2d");
+const picture=document.getElementById("picture"),statusText=document.getElementById("statusText"),dot=document.getElementById("dot"),modeText=document.getElementById("mode");
+let mode=0,auto=true,audioLevel=0,smooth=0,scale=1,rotation=0,last=performance.now(),modeTimer=0,nextMode=22000;
+const stars=Array.from({length:360},()=>({x:Math.random(),y:Math.random(),z:Math.random(),speed:.3+Math.random()*1.7}));
+let fireworks=[];
 
-function resize(){bgCanvas.width=innerWidth;bgCanvas.height=innerHeight;canvas.width=innerWidth;canvas.height=innerHeight}
-addEventListener("resize",resize);resize();
-
-socket.on("connect",()=>{statusText.textContent="TV Connected";dot.style.background="#32d74b";socket.emit("identify","viewer")});
-socket.on("disconnect",()=>{statusText.textContent="Disconnected - reconnecting...";dot.style.background="#ff3b30"});
-socket.on("connect_error",e=>{statusText.textContent="Connection error";console.error(e)});
-socket.on("initial-state",s=>{if(!s)return;if(s.image)showImage(s.image);audioLevel=Number(s.audioLevel)||0;scale=Number(s.scale)||1;rotation=Number(s.rotation)||0});
-socket.on("controller-image",d=>{if(d&&d.image)showImage(d.image)});
-socket.on("audio-level",d=>{audioLevel=Number(d&&d.level)||0});
-socket.on("image-scale",d=>{if(d&&Number.isFinite(Number(d.scale))){scale=Number(d.scale);applyPicture()}});
-socket.on("image-rotation",d=>{if(d&&Number.isFinite(Number(d.rotation))){rotation=Number(d.rotation);applyPicture()}});
-socket.on("reset-display",()=>{picture.removeAttribute("src");picture.style.opacity="0";scale=1;rotation=0;audioLevel=0});
-
-function showImage(src){picture.onload=()=>{picture.style.opacity="1";document.body.classList.add("started")};picture.src=src;applyPicture()}
-function applyPicture(){picture.style.transform=`translate(-50%,-50%) scale(${scale}) rotate(${rotation}deg)`}
-function fullscreen(){if(!document.fullscreenElement)(document.documentElement.requestFullscreen||document.documentElement.webkitRequestFullscreen)?.call(document.documentElement)}
-addEventListener("keydown",e=>{
-if(e.key==="ArrowUp"){scale=Math.min(3,scale+.1);applyPicture();socket.emit("image-scale",{scale})}
-if(e.key==="ArrowDown"){scale=Math.max(.2,scale-.1);applyPicture();socket.emit("image-scale",{scale})}
-if(e.key==="ArrowLeft"){rotation-=5;applyPicture();socket.emit("image-rotation",{rotation})}
-if(e.key==="ArrowRight"){rotation+=5;applyPicture();socket.emit("image-rotation",{rotation})}
-if(e.key==="Enter"||e.key==="NumpadEnter"){fullscreen()}
-});
-
+function resize(){bgCanvas.width=fxCanvas.width=innerWidth;bgCanvas.height=fxCanvas.height=innerHeight}addEventListener("resize",resize);resize();
+function setMode(m){mode=((m%10)+10)%10;modeTimer=0;nextMode=18000+Math.random()*16000;modeText.textContent=modes[mode];fireworks=[]}
 function rand(a,b){return Math.random()*(b-a)+a}
 function hsla(h,s,l,a=1){return `hsla(${h},${s}%,${l}%,${a})`}
-let stars=Array.from({length:260},()=>({x:Math.random(),y:Math.random(),z:Math.random(),speed:rand(.15,1.4)}));
-let particles=Array.from({length:140},()=>({x:rand(0,innerWidth),y:rand(0,innerHeight),vx:rand(-1,1),vy:rand(-1,1),life:rand(0,1),h:rand(0,360)}));
-let fireworks=[];
-function burst(x,y){
-for(let i=0;i<55;i++){let a=rand(0,Math.PI*2),sp=rand(1.5,6);fireworks.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:1,h:rand(0,360)})}
-}
-function fireworksScene(t,p){
-bg.fillStyle="rgba(2,3,15,.18)";bg.fillRect(0,0,innerWidth,innerHeight);
-if(Math.random()<.025+p*.08)burst(rand(innerWidth*.15,innerWidth*.85),rand(innerHeight*.15,innerHeight*.65));
-fireworks.forEach(f=>{f.x+=f.vx;f.y+=f.vy;f.vy+=.045;f.vx*=.99;f.life-=.012;bg.fillStyle=hsla(f.h,100,65,f.life);bg.beginPath();bg.arc(f.x,f.y,2+p*3,0,7);bg.fill()});
-fireworks=fireworks.filter(f=>f.life>0);
-}
-function galaxyScene(t,p){
-bg.fillStyle="rgba(1,0,15,.24)";bg.fillRect(0,0,innerWidth,innerHeight);
-let cx=innerWidth/2,cy=innerHeight/2;
-let g=bg.createRadialGradient(cx,cy,0,cx,cy,Math.max(innerWidth,innerHeight)*.7);g.addColorStop(0,hsla(280,90,55,.22));g.addColorStop(.4,hsla(210,90,40,.12));g.addColorStop(1,"rgba(0,0,0,.2)");bg.fillStyle=g;bg.fillRect(0,0,innerWidth,innerHeight);
-stars.forEach(s=>{let a=t*.00015*s.speed,x=cx+Math.cos(a+s.x*20)*(s.x*innerWidth*.8+30),y=cy+Math.sin(a+s.x*20)*(s.y*innerHeight*.8+30);bg.fillStyle=hsla(200+s.x*120,100,80,.45+s.z*.5);bg.beginPath();bg.arc(x,y,1+s.z*3+p*2,0,7);bg.fill()});
-}
-function tunnelScene(t,p){
-bg.fillStyle="rgba(0,0,8,.3)";bg.fillRect(0,0,innerWidth,innerHeight);
-let cx=innerWidth/2,cy=innerHeight/2;
-for(let i=0;i<22;i++){let z=((i/22+t*.00035)%1),r=(1-z)*Math.max(innerWidth,innerHeight)*.8+20;bg.strokeStyle=hsla((i*25+t*.03)%360,100,60,.2+.7*z);bg.lineWidth=3+p*5;bg.beginPath();bg.arc(cx,cy,r,0,Math.PI*2);bg.stroke()}
-}
-function sunScene(t,p){
-bg.fillStyle="rgba(15,3,0,.22)";bg.fillRect(0,0,innerWidth,innerHeight);
-let cx=innerWidth*.5,cy=innerHeight*.48,r=Math.min(innerWidth,innerHeight)*.2*(1+p*.25);
-let g=bg.createRadialGradient(cx,cy,0,cx,cy,r*2.2);g.addColorStop(0,"#fff");g.addColorStop(.15,"#fff36a");g.addColorStop(.45,"#ff9d00");g.addColorStop(1,"rgba(255,40,0,0)");bg.fillStyle=g;bg.beginPath();bg.arc(cx,cy,r*2.2,0,7);bg.fill();
-for(let i=0;i<35;i++){let a=i*.7+t*.0004;let len=r*rand(.6,1.5)*(1+p);bg.strokeStyle=hsla(25+rand(-15,15),100,60,.3);bg.lineWidth=rand(2,7);bg.beginPath();bg.moveTo(cx+Math.cos(a)*r*.7,cy+Math.sin(a)*r*.7);bg.lineTo(cx+Math.cos(a)*len,cy+Math.sin(a)*len);bg.stroke()}
-}
-function starfieldScene(t,p){
-bg.fillStyle="rgba(0,0,0,.28)";bg.fillRect(0,0,innerWidth,innerHeight);
-let cx=innerWidth/2,cy=innerHeight/2;
-stars.forEach(s=>{s.z-=.004+s.speed*.003+p*.025;if(s.z<.02)s.z=1;let x=(s.x-.5)*innerWidth/s.z+cx,y=(s.y-.5)*innerHeight/s.z+cy;bg.strokeStyle="rgba(255,255,255,.8)";bg.lineWidth=1+s.z*3;bg.beginPath();bg.moveTo(x,y);bg.lineTo(cx+(x-cx)*(1+.035/s.z),cy+(y-cy)*(1+.035/s.z));bg.stroke()})
-}
-function auroraScene(t,p){
-bg.fillStyle="rgba(0,8,18,.25)";bg.fillRect(0,0,innerWidth,innerHeight);
-for(let i=0;i<12;i++){bg.beginPath();for(let x=0;x<=innerWidth;x+=15){let y=innerHeight*.35+i*35+Math.sin(x*.006+t*.001+i)*90*(1+p);if(x===0)bg.moveTo(x,y);else bg.lineTo(x,y)}bg.strokeStyle=hsla(150+i*18,100,65,.16);bg.lineWidth=25;bg.stroke()}
-}
-function cosmicWaves(t,p){
-bg.fillStyle="rgba(5,0,20,.22)";bg.fillRect(0,0,innerWidth,innerHeight);
-for(let j=0;j<14;j++){bg.beginPath();for(let x=0;x<=innerWidth;x+=12){let y=innerHeight/2+j*25+Math.sin(x*.008+t*.002+j)*60*(1+p);if(x===0)bg.moveTo(x,y);else bg.lineTo(x,y)}bg.strokeStyle=hsla(190+j*12,100,65,.18);bg.lineWidth=5;bg.stroke()}
-}
-function meteorScene(t,p){
-bg.fillStyle="rgba(0,0,10,.3)";bg.fillRect(0,0,innerWidth,innerHeight);
-for(let i=0;i<45;i++){let x=(i*193+t*.25*(1+p))%(innerWidth+400)-200,y=(i*83+t*.12)%(innerHeight+300)-150;bg.strokeStyle=hsla(200+i*3,100,75,.35);bg.lineWidth=2+p*3;bg.beginPath();bg.moveTo(x,y);bg.lineTo(x-100*(1+p),y-55*(1+p));bg.stroke()}
-}
-function plasmaScene(t,p){
-let g=bg.createLinearGradient(0,0,innerWidth,innerHeight);g.addColorStop(0,hsla((t*.03)%360,90,30,1));g.addColorStop(.5,hsla((t*.05+130)%360,90,35,1));g.addColorStop(1,hsla((t*.02+260)%360,90,25,1));bg.fillStyle=g;bg.fillRect(0,0,innerWidth,innerHeight);
-for(let i=0;i<10;i++){bg.strokeStyle=hsla((t*.1+i*35)%360,100,65,.3);bg.lineWidth=30;bg.beginPath();bg.arc(innerWidth/2,innerHeight/2,100+i*90+Math.sin(t*.002+i)*40*(1+p),0,7);bg.stroke()}
-}
-function hyperspaceScene(t,p){starfieldScene(t,p*1.7)}
 
-function drawScene(t){
-let dt=t-lastTime;lastTime=t;modeTimer+=dt;
-if(modeTimer>rand(18000,30000)){mode=(mode+1)%modes.length;modeTimer=0;fireworks=[]}
-modeText.textContent=modes[mode];
-smoothAudio+=(audioLevel-smoothAudio)*.1;
-let p=Math.min(1,smoothAudio/255);
-switch(mode){case 0:galaxyScene(t,p);break;case 1:fireworksScene(t,p);break;case 2:tunnelScene(t,p);break;case 3:sunScene(t,p);break;case 4:starfieldScene(t,p);break;case 5:auroraScene(t,p);break;case 6:cosmicWaves(t,p);break;case 7:meteorScene(t,p);break;case 8:plasmaScene(t,p);break;case 9:hyperspaceScene(t,p);break}
-bg.fillStyle="rgba(0,0,0,.04)";bg.fillRect(0,0,innerWidth,innerHeight);
-bgCanvas.style.transform=`scale(${1+p*.08})`;
-picture.style.filter=`brightness(${1+p*.25}) drop-shadow(0 0 ${20+p*70}px rgba(255,180,30,.5))`;
-ctx.clearRect(0,0,innerWidth,innerHeight);
-ctx.beginPath();
-let amp=8+p*90;
-for(let x=0;x<=innerWidth;x+=8){let y=innerHeight*.84+Math.sin(x*.018+t*.002)*amp+Math.sin(x*.007-t*.001)*amp*.35;if(x===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)}
-ctx.strokeStyle="rgba(255,220,80,.55)";ctx.lineWidth=2+p*5;ctx.stroke();
-requestAnimationFrame(drawScene);
-}
-requestAnimationFrame(drawScene);
+socket.on("connect",()=>{statusText.textContent="TV Connected";dot.style.background="#32d74b";socket.emit("identify","viewer")});
+socket.on("disconnect",()=>{statusText.textContent="Disconnected - reconnecting...";dot.style.background="#f33"});
+socket.on("connect_error",e=>{statusText.textContent="Connection error"});
+socket.on("initial-state",s=>{if(s){if(s.image)showImage(s.image);audioLevel=Number(s.audioLevel)||0;scale=Number(s.scale)||1;rotation=Number(s.rotation)||0}});
+socket.on("controller-image",d=>{if(d?.image)showImage(d.image)});
+socket.on("audio-level",d=>{audioLevel=Number(d?.level)||0});
+socket.on("image-scale",d=>{if(Number.isFinite(Number(d?.scale))){scale=Number(d.scale);applyPicture()}});
+socket.on("image-rotation",d=>{if(Number.isFinite(Number(d?.rotation))){rotation=Number(d.rotation);applyPicture()}});
+socket.on("animation-mode",d=>{if(Number.isInteger(Number(d?.mode)))setMode(Number(d.mode))});
+socket.on("animation-auto",d=>{auto=Boolean(d?.enabled)});
+socket.on("reset-display",()=>{picture.removeAttribute("src");picture.style.opacity=0;scale=1;rotation=0;audioLevel=0;setMode(0)});
 
-setInterval(()=>{document.getElementById("clock").textContent=new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"})},1000);
+function showImage(src){picture.src=src;picture.onload=()=>picture.style.opacity=1;applyPicture()}
+function applyPicture(){picture.style.transform=`translate(-50%,-50%) scale(${scale}) rotate(${rotation}deg)`}
+function fullscreen(){(document.documentElement.requestFullscreen||document.documentElement.webkitRequestFullscreen)?.call(document.documentElement)}
+addEventListener("keydown",e=>{
+ if(e.key==="ArrowUp"){scale=Math.min(3,scale+.1);applyPicture();socket.emit("image-scale",{scale})}
+ if(e.key==="ArrowDown"){scale=Math.max(.2,scale-.1);applyPicture();socket.emit("image-scale",{scale})}
+ if(e.key==="ArrowLeft"){rotation-=5;applyPicture();socket.emit("image-rotation",{rotation})}
+ if(e.key==="ArrowRight"){rotation+=5;applyPicture();socket.emit("image-rotation",{rotation})}
+ if(e.key==="Enter"||e.key==="NumpadEnter")fullscreen();
+});
+
+function background(t,p){
+ const w=innerWidth,h=innerHeight,cx=w/2,cy=h/2;
+ if(mode===0){bg.fillStyle="rgba(1,0,15,.28)";bg.fillRect(0,0,w,h);stars.forEach(s=>{let a=t*.00015*s.speed,x=cx+Math.cos(a+s.x*20)*(s.x*w*.8+30),y=cy+Math.sin(a+s.x*20)*(s.y*h*.8+30);bg.fillStyle=hsla(190+s.x*130,100,80,.45+s.z*.5);bg.beginPath();bg.arc(x,y,1+s.z*3+p*2,0,7);bg.fill()})}
+ else if(mode===1){bg.fillStyle="rgba(2,3,15,.2)";bg.fillRect(0,0,w,h);if(Math.random()<.03+p*.09){let x=rand(w*.1,w*.9),y=rand(h*.12,h*.65);for(let i=0;i<60;i++){let a=rand(0,7),sp=rand(1.5,6);fireworks.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:1,h:rand(0,360)})}}fireworks.forEach(f=>{f.x+=f.vx;f.y+=f.vy;f.vy+=.045;f.life-=.014;bg.fillStyle=hsla(f.h,100,65,f.life);bg.beginPath();bg.arc(f.x,f.y,2+p*3,0,7);bg.fill()});fireworks=fireworks.filter(f=>f.life>0)}
+ else if(mode===2){bg.fillStyle="rgba(0,0,10,.3)";bg.fillRect(0,0,w,h);for(let i=0;i<26;i++){let z=((i/26+t*.00035)%1),r=(1-z)*Math.max(w,h)*.8+20;bg.strokeStyle=hsla((i*25+t*.03)%360,100,60,.25+.7*z);bg.lineWidth=3+p*5;bg.beginPath();bg.arc(cx,cy,r,0,7);bg.stroke()}}
+ else if(mode===3){bg.fillStyle="rgba(15,3,0,.22)";bg.fillRect(0,0,w,h);let r=Math.min(w,h)*.2*(1+p*.25),g=bg.createRadialGradient(cx,cy,0,cx,cy,r*2.2);g.addColorStop(0,"#fff");g.addColorStop(.2,"#fff36a");g.addColorStop(.5,"#ff8a00");g.addColorStop(1,"rgba(255,30,0,0)");bg.fillStyle=g;bg.beginPath();bg.arc(cx,cy,r*2.2,0,7);bg.fill();for(let i=0;i<35;i++){let a=i*.7+t*.0004;bg.strokeStyle=hsla(25,100,60,.25);bg.lineWidth=3;bg.beginPath();bg.moveTo(cx+Math.cos(a)*r*.7,cy+Math.sin(a)*r*.7);bg.lineTo(cx+Math.cos(a)*r*rand(.8,1.5),cy+Math.sin(a)*r*rand(.8,1.5));bg.stroke()}}
+ else if(mode===4){bg.fillStyle="rgba(0,0,0,.25)";bg.fillRect(0,0,w,h);stars.forEach(s=>{s.z-=.004+s.speed*.003+p*.025;if(s.z<.02)s.z=1;let x=(s.x-.5)*w/s.z+cx,y=(s.y-.5)*h/s.z+cy;bg.strokeStyle="rgba(255,255,255,.8)";bg.beginPath();bg.moveTo(x,y);bg.lineTo(cx+(x-cx)*(1+.04/s.z),cy+(y-cy)*(1+.04/s.z));bg.stroke()})}
+ else if(mode===5){bg.fillStyle="rgba(0,8,18,.25)";bg.fillRect(0,0,w,h);for(let i=0;i<12;i++){bg.beginPath();for(let x=0;x<=w;x+=15){let y=h*.35+i*35+Math.sin(x*.006+t*.001+i)*90*(1+p);x?bg.lineTo(x,y):bg.moveTo(x,y)}bg.strokeStyle=hsla(150+i*18,100,65,.16);bg.lineWidth=25;bg.stroke()}}
+ else if(mode===6){bg.fillStyle="rgba(5,0,20,.22)";bg.fillRect(0,0,w,h);for(let j=0;j<14;j++){bg.beginPath();for(let x=0;x<=w;x+=12){let y=h/2+j*25+Math.sin(x*.008+t*.002+j)*60*(1+p);x?bg.lineTo(x,y):bg.moveTo(x,y)}bg.strokeStyle=hsla(190+j*12,100,65,.2);bg.lineWidth=5;bg.stroke()}}
+ else if(mode===7){bg.fillStyle="rgba(0,0,10,.3)";bg.fillRect(0,0,w,h);for(let i=0;i<55;i++){let x=(i*193+t*.25*(1+p))%(w+400)-200,y=(i*83+t*.12)%(h+300)-150;bg.strokeStyle=hsla(200+i*3,100,75,.4);bg.lineWidth=2+p*3;bg.beginPath();bg.moveTo(x,y);bg.lineTo(x-100*(1+p),y-55*(1+p));bg.stroke()}}
+ else if(mode===8){let g=bg.createLinearGradient(0,0,w,h);g.addColorStop(0,hsla((t*.03)%360,90,30));g.addColorStop(.5,hsla((t*.05+130)%360,90,35));g.addColorStop(1,hsla((t*.02+260)%360,90,25));bg.fillStyle=g;bg.fillRect(0,0,w,h);for(let i=0;i<10;i++){bg.strokeStyle=hsla((t*.1+i*35)%360,100,65,.3);bg.lineWidth=30;bg.beginPath();bg.arc(cx,cy,100+i*90+Math.sin(t*.002+i)*40*(1+p),0,7);bg.stroke()}}
+ else {bg.fillStyle="rgba(0,0,0,.28)";bg.fillRect(0,0,w,h);stars.forEach(s=>{s.z-=.012+s.speed*.008+p*.04;if(s.z<.02)s.z=1;let x=(s.x-.5)*w/s.z+cx,y=(s.y-.5)*h/s.z+cy;bg.strokeStyle="rgba(255,255,255,.9)";bg.lineWidth=2;bg.beginPath();bg.moveTo(x,y);bg.lineTo(cx+(x-cx)*(1+.08/s.z),cy+(y-cy)*(1+.08/s.z));bg.stroke()})}
+}
+function draw(t){const dt=t-last;last=t;modeTimer+=dt;if(auto&&modeTimer>nextMode)setMode(mode+1);smooth+=(audioLevel-smooth)*.12;const p=Math.min(1,smooth/255);background(t,p);fx.clearRect(0,0,innerWidth,innerHeight);fx.beginPath();for(let x=0;x<=innerWidth;x+=8){let y=innerHeight*.86+Math.sin(x*.018+t*.002)*(8+p*90);x?fx.lineTo(x,y):fx.moveTo(x,y)}fx.strokeStyle="rgba(255,220,80,.5)";fx.lineWidth=2+p*5;fx.stroke();document.getElementById("glow").style.transform=`scale(${1+p*.12})`;picture.style.filter=`brightness(${1+p*.25})`;requestAnimationFrame(draw)}
+requestAnimationFrame(draw);
+setInterval(()=>document.getElementById("clock").textContent=new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}),1000);
 </script>
-</body></html>
+</body>
+</html>
