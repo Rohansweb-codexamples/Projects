@@ -55,6 +55,25 @@ $("auto").onchange=e=>{state.auto=e.target.checked;send()};$("audioReactive").on
 $("file").onchange=e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader;r.onload=()=>{state.image=r.result;$("pic").src=r.result;send()};r.readAsDataURL(f)};$("send").onclick=send;$("clear").onclick=()=>socket.emit("reset-display");$("reset").onclick=()=>socket.emit("reset-display");$("full").onclick=()=>socket.emit("display-settings",{fullscreen:true});$("save").onclick=()=>{localStorage.setItem("rwTVPreset",JSON.stringify(state));$("save").textContent="Saved"};
 $("showMessage").onclick=()=>{state.message=$("messageInput").value.trim();state.messageVisible=!!state.message;state.screensaver=false;send()};$("hideMessage").onclick=()=>{state.messageVisible=false;if($("clearMessage").checked)state.message="";send()};$("showAnnouncement").onclick=()=>{state.announcement=$("announcementInput").value.trim();state.announcementVisible=!!state.announcement;state.screensaver=false;send()};$("hideAnnouncement").onclick=()=>{state.announcementVisible=false;send()};$("screensaverOn").onclick=()=>{state.screensaver=true;state.messageVisible=false;state.announcementVisible=false;send()};$("screensaverOff").onclick=()=>{state.screensaver=false;send()};
 ["Welcome to Rohans Web","Please take your seats","The display is now active","Thank you for watching"].forEach(x=>{let b=document.createElement("button");b.className="btn";b.textContent=x;b.onclick=()=>{$("messageInput").value=x;state.message=x;state.messageVisible=true;state.screensaver=false;send()};$("quickMessages").appendChild(b)});$("mic").onclick=async()=>{try{let st=await navigator.mediaDevices.getUserMedia({audio:true}),a=new AudioContext(),src=a.createMediaStreamSource(st),an=a.createAnalyser();an.fftSize=256;src.connect(an);let ar=new Uint8Array(an.frequencyBinCount);$("audio").textContent="Live";(function f(){an.getByteFrequencyData(ar);socket.emit("audio-level",{level:ar.reduce((x,y)=>x+y,0)/ar.length});requestAnimationFrame(f)})()}catch{$("audio").textContent="Blocked"}};
-document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));t.classList.add("active");document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active",p.id===t.dataset.page))});
+function showPage(id){
+  document.querySelectorAll(".page").forEach(p=>{
+    p.classList.remove("active");
+    p.style.display="none";
+  });
+  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+  const page=document.getElementById(id);
+  const tab=document.querySelector('.tab[data-page="'+id+'"]');
+  if(page){
+    page.classList.add("active");
+    page.style.display=(id==="display"||id==="lights"||id==="messages")?"grid":"block";
+  }
+  if(tab) tab.classList.add("active");
+}
+document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",e=>{
+  e.preventDefault();
+  e.stopPropagation();
+  showPage(t.dataset.page);
+}));
+showPage("display");
 let old=localStorage.getItem("rwTV");if(old)try{Object.assign(state,JSON.parse(old))}catch{}sync();
 </script></body></html>
