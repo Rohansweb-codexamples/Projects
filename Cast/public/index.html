@@ -1,80 +1,55 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Rohans Web TV Admin Control</title>
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Rohans Web TV Control</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🖥️</text></svg>">
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;color:#111;background:linear-gradient(135deg,#ffe259,#ffa751,#ff5f6d,#845ec2);background-size:300% 300%;animation:bg 14s ease infinite;padding:14px}
-@keyframes bg{0%,100%{background-position:0 50%}50%{background-position:100% 50%}}
-.app{max-width:1250px;margin:auto;background:rgba(255,255,255,.94);border-radius:28px;padding:18px;box-shadow:0 20px 70px #0004}
-header{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}.brand{font-size:26px;font-weight:900}.sub{opacity:.6}
-.status{display:flex;gap:8px;flex-wrap:wrap}.pill{padding:9px 13px;border-radius:999px;background:#eee;font-weight:800}.ok{background:#d8ffd9}
-.tabs{display:flex;gap:8px;overflow:auto;margin:16px 0}.tab{white-space:nowrap}.tab.active{background:linear-gradient(135deg,#ff9800,#ff3d00)}
-button,.tab{border:0;padding:12px 15px;border-radius:14px;background:#161616;color:white;font-weight:800;cursor:pointer}.button2{background:#eee;color:#111}.danger{background:#c62828}
-.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.card{background:#f4f4f6;border-radius:20px;padding:16px}.card h2{margin:0 0 12px;font-size:17px}.wide{grid-column:span 2}
-.control{margin:13px 0}.control label{display:flex;justify-content:space-between;font-weight:800;margin-bottom:7px}.control input[type=range]{width:100%}
-.modes{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.modes button{background:#222}.modes button.active{background:linear-gradient(135deg,#ff9800,#e91e63)}
-input[type=color]{width:100%;height:48px;border:0;border-radius:12px;background:#fff}select{width:100%;padding:13px;border-radius:12px;border:2px solid #ddd;background:white;font-weight:700}
-.toggle{display:flex;align-items:center;justify-content:space-between;padding:12px;background:#fff;border-radius:13px;margin:8px 0}.toggle input{width:22px;height:22px}
-.preview{height:300px;border-radius:20px;background:#03030a;overflow:hidden;position:relative}.preview canvas{position:absolute;inset:0;width:100%;height:100%}.preview img{position:absolute;max-width:82%;max-height:80%;left:50%;top:50%;transform:translate(-50%,-50%);border-radius:15px}
-.actions{display:flex;gap:9px;flex-wrap:wrap}input[type=file]{width:100%;padding:12px;background:#fff;border:2px dashed #ff9800;border-radius:12px}
-@media(max-width:900px){.grid{grid-template-columns:repeat(2,1fr)}.wide{grid-column:span 2}}@media(max-width:600px){body{padding:7px}.grid{grid-template-columns:1fr}.wide{grid-column:span 1}.app{padding:12px}.preview{height:250px}}
+*{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;overflow:hidden}body{font-family:Arial,sans-serif;color:#111;background:linear-gradient(120deg,#ffd600,#ff7a00,#ff1744,#7c4dff,#00b8ff,#00e676);background-size:500% 500%;animation:bg 16s ease infinite;padding:10px}
+@keyframes bg{0%{background-position:0 50%}50%{background-position:100% 50%}100%{background-position:0 50%}}
+.app{height:calc(100vh - 20px);max-width:1500px;margin:auto;background:#ffffffeb;border:1px solid #fff8;border-radius:24px;box-shadow:0 18px 60px #0005;display:grid;grid-template-rows:auto auto 1fr auto;overflow:hidden}
+header{padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px}.brand{font-size:23px;font-weight:950}.sub{font-size:12px;opacity:.6}.status{display:flex;gap:7px}.pill{padding:8px 11px;border-radius:999px;background:#eee;font-size:12px;font-weight:800}.ok{background:#b9ffc8}
+nav{display:flex;gap:7px;padding:0 12px 10px;overflow:hidden}.tab{flex:1;min-width:0;border:0;border-radius:12px;padding:10px;background:#eee;font-weight:900;cursor:pointer}.tab.active{background:linear-gradient(135deg,#ff9800,#ff1744);color:#fff}
+main{min-height:0;overflow:hidden;padding:10px 12px}.page{height:100%;display:none;min-height:0}.page.active{display:grid}.display{grid-template-columns:1.4fr 1fr 1fr;grid-template-rows:1fr 1fr;gap:10px}.card{min-width:0;min-height:0;background:#f3f4f7;border-radius:18px;padding:12px;overflow:hidden}.card h2{font-size:14px;margin:0 0 9px}.preview{height:100%;min-height:180px;background:#02020a;border-radius:14px;position:relative;overflow:hidden}.preview:after{content:"LIVE";position:absolute;top:8px;right:8px;background:#f22;color:white;border-radius:8px;padding:4px 7px;font-size:10px;font-weight:900}.preview canvas{width:100%;height:100%}.preview img{position:absolute;max-width:82%;max-height:80%;left:50%;top:50%;transform:translate(-50%,-50%);border-radius:12px}
+.big{grid-row:1/3}.controls{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}.btn{border:0;border-radius:11px;padding:9px 6px;background:#181818;color:white;font-weight:800;font-size:11px;cursor:pointer}.btn.active{background:linear-gradient(135deg,#ff9800,#e91e63)}.btn.alt{background:#fff;color:#111;border:1px solid #ddd}.btn.danger{background:#d50000}.widebtn{grid-column:1/-1}.slider{margin:8px 0}.slider label{display:flex;justify-content:space-between;font-size:11px;font-weight:900;margin-bottom:4px}.slider input{width:100%;accent-color:#ff6d00}.toggle{display:flex;align-items:center;justify-content:space-between;background:#fff;padding:8px;border-radius:10px;margin:5px 0;font-size:11px;font-weight:800}.toggle input{width:19px;height:19px}.colors{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}.swatch{height:30px;border:0;border-radius:9px;cursor:pointer}.file{width:100%;font-size:11px}.footer{padding:7px 12px;font-size:10px;opacity:.55;text-align:center}
+.palette{display:grid;grid-template-columns:repeat(8,1fr);gap:7px}.palette button{height:42px;border:0;border-radius:12px;cursor:pointer;font-weight:900;color:white;text-shadow:0 1px 3px #000}.two{display:grid;grid-template-columns:1fr 1fr;gap:9px}.full{grid-column:1/-1}
+@media(max-height:650px){header{padding:7px 12px}.brand{font-size:18px}.sub{display:none}.card{padding:9px}.tab{padding:7px}.btn{padding:7px}.slider{margin:5px 0}}
 </style></head>
-<body><main class="app">
-<header><div><div class="brand">Rohans Web TV Admin</div><div class="sub">Interactive control centre for your TV display</div></div><div class="status"><div class="pill" id="connection">Connecting...</div><div class="pill" id="tv">TV offline</div></div></header>
-<div class="tabs"><button class="tab active" data-tab="display">Display</button><button class="tab" data-tab="lights">Lights</button><button class="tab" data-tab="effects">Effects</button><button class="tab" data-tab="picture">Picture</button><button class="tab" data-tab="presets">Presets</button></div>
-
-<section id="display" class="grid">
-<div class="card wide"><h2>Live Preview</h2><div class="preview"><canvas id="previewCanvas"></canvas><img id="pic"></div></div>
-<div class="card"><h2>Animation</h2><div class="modes" id="modes"></div><button id="auto" style="width:100%;margin-top:9px">Auto Cycle: ON</button></div>
-<div class="card"><h2>Motion</h2><div class="control"><label>Speed <span id="speedV">100%</span></label><input id="speed" type="range" min=".1" max="3" step=".1" value="1"></div><div class="control"><label>Intensity <span id="intV">100%</span></label><input id="intensity" type="range" min="0" max="2" step=".05" value="1"></div><div class="control"><label>Brightness <span id="brightV">100%</span></label><input id="brightness" type="range" min="0" max="1.5" step=".05" value="1"></div></div>
-<div class="card"><h2>Audio</h2><div class="toggle">Audio Reactive <input id="audioReactive" type="checkbox" checked></div><button id="mic" style="width:100%">Start Tablet Microphone</button><div class="sub" id="audio">Audio stopped</div></div>
+<body><div class="app">
+<header><div><div class="brand">Rohans Web TV Control Centre</div><div class="sub">Interactive tablet controller</div></div><div class="status"><span class="pill" id="connection">Connecting</span><span class="pill" id="tv">TV Offline</span></div></header>
+<nav><button class="tab active" data-page="display">Control</button><button class="tab" data-page="lights">Lights</button><button class="tab" data-page="colour">Colours</button><button class="tab" data-page="picture">Picture</button><button class="tab" data-page="presets">Scenes</button><button class="tab" data-page="admin">Admin</button></nav>
+<main>
+<section id="display" class="page display active">
+<div class="card big"><h2>Live TV Preview</h2><div class="preview"><canvas id="cv"></canvas><img id="pic"></div></div>
+<div class="card"><h2>20 Animation Scenes</h2><div class="controls" id="modes"></div></div>
+<div class="card"><h2>Master Controls</h2><div class="toggle">Auto cycle <input id="auto" type="checkbox" checked></div><div class="toggle">Audio reactive <input id="audioReactive" type="checkbox" checked></div><div class="slider"><label>Speed <b id="sv">100%</b></label><input id="speed" type="range" min=".1" max="3" step=".1" value="1"></div><div class="slider"><label>Intensity <b id="iv">100%</b></label><input id="intensity" type="range" min="0" max="2" step=".05" value="1"></div><div class="slider"><label>Brightness <b id="bv">100%</b></label><input id="brightness" type="range" min="0" max="1.5" step=".05" value="1"></div></div>
+<div class="card"><h2>Audio & Quick Actions</h2><button class="btn widebtn" id="mic">Start Tablet Microphone</button><div class="toggle">Audio status <span id="audio">Stopped</span></div><div class="controls"><button class="btn" id="full">TV Fullscreen</button><button class="btn danger" id="reset">Reset TV</button></div></div>
+<div class="card"><h2>Effects</h2><div class="controls" id="effects"></div></div>
 </section>
-
-<section id="lights" class="grid" hidden>
-<div class="card"><h2>Ambient Lights</h2><div class="toggle">Lights Enabled <input id="lights" type="checkbox" checked></div><label>Light Colour</label><input id="color" type="color" value="#ff9800"><div class="control"><label>Light Strength <span id="lightV">100%</span></label><input id="light" type="range" min="0" max="2" step=".05" value="1"></div></div>
-<div class="card"><h2>Quick Light Scenes</h2><div class="modes" id="lightScenes"></div></div>
-</section>
-
-<section id="effects" class="grid" hidden>
-<div class="card"><h2>Screen Effects</h2><select id="effect"><option value="none">Clean</option><option value="pulse">Colour Pulse</option><option value="flash">Flash</option><option value="rainbow">Rainbow Wash</option><option value="spotlight">Spotlight</option><option value="vignette">Vignette</option></select><div class="control"><label>Effect Strength <span id="effectV">100%</span></label><input id="effectStrength" type="range" min="0" max="2" step=".05" value="1"></div></div>
-<div class="card"><h2>Fast Actions</h2><div class="actions"><button id="fullscreen">TV Fullscreen</button><button id="reset" class="danger">Reset Everything</button></div></div>
-</section>
-
-<section id="pictureTab" class="grid" hidden>
-<div class="card wide"><h2>Picture Control</h2><input id="file" type="file" accept="image/*"><div class="actions" style="margin-top:10px"><button id="send">Send Picture</button><button id="clear" class="button2">Clear Picture</button></div></div>
-<div class="card"><h2>Image</h2><div class="control"><label>Scale <span id="scaleV">100%</span></label><input id="scale" type="range" min=".2" max="3" step=".05" value="1"></div><div class="control"><label>Rotation <span id="rotV">0°</span></label><input id="rotation" type="range" min="-180" max="180" step="1" value="0"></div></div>
-</section>
-
-<section id="presets" class="grid" hidden>
-<div class="card wide"><h2>Colourful Presets</h2><div class="modes" id="presets"></div></div>
-<div class="card"><h2>Admin</h2><div class="actions"><button id="save">Save Current Preset</button><button id="reset2" class="danger">Reset TV</button></div></div>
-</section>
-</main>
+<section id="lights" class="page two"><div class="card"><h2>TV Light Engine</h2><div class="toggle">Lights enabled <input id="lights" type="checkbox" checked></div><div class="slider"><label>Light power <b id="lv">100%</b></label><input id="light" type="range" min="0" max="2" step=".05" value="1"></div><div class="slider"><label>Glow <b id="gv">50%</b></label><input id="glow" type="range" min="0" max="2" step=".05" value="1"></div><div class="controls" id="lightModes"></div></div><div class="card"><h2>Lighting Colours</h2><div class="palette" id="palette"></div><div style="margin-top:10px"><input id="custom" type="color" value="#ff9800" style="width:100%;height:45px;border:0"></div></div></section>
+<section id="colour" class="page"><div class="card"><h2>Colour Studio</h2><div class="palette" id="palette2"></div><div class="two" style="margin-top:10px"><div><h2>Primary</h2><input id="c1" type="color" value="#ff9800" style="width:100%;height:60px"></div><div><h2>Secondary</h2><input id="c2" type="color" value="#00e5ff" style="width:100%;height:60px"></div></div><div class="slider"><label>Colour intensity</label><input id="ci" type="range" min="0" max="2" step=".05" value="1"></div></div></section>
+<section id="picture" class="page"><div class="card"><h2>Picture Studio</h2><input class="file" id="file" type="file" accept="image/*"><div class="controls" style="margin-top:10px"><button class="btn" id="send">Send Picture</button><button class="btn alt" id="clear">Clear</button></div><div class="slider"><label>Scale <b id="scv">100%</b></label><input id="scale" type="range" min=".2" max="3" step=".05" value="1"></div><div class="slider"><label>Rotation <b id="rv">0°</b></label><input id="rotation" type="range" min="-180" max="180" value="0"></div></div></section>
+<section id="presets" class="page"><div class="card"><h2>One-Tap Scenes</h2><div class="palette" id="scenes"></div></div></section>
+<section id="admin" class="page"><div class="card"><h2>Administration</h2><div class="two"><button class="btn" onclick="location.href='/admin.html'">Open Admin Centre</button><button class="btn" id="save">Save Current Scene</button></div><p style="font-size:12px;opacity:.65">Use the separate Admin Centre for device status, connections, diagnostics and server controls.</p></div></section>
+</main><div class="footer">Rohans Web TV • All controls update the connected display</div></div>
 <script src="/socket.io/socket.io.js"></script>
 <script>
-const modes=["Galaxy Space","Fireworks","Neon Tunnel","Sun","Starfield","Aurora","Cosmic Waves","Meteor Travel","Plasma","Hyperspace"];
-const socket=io({transports:["websocket","polling"],reconnection:true,reconnectionAttempts:Infinity,reconnectionDelay:700});
-const $=id=>document.getElementById(id);let state={mode:0,auto:true,speed:1,intensity:1,brightness:1,color:"#ff9800",effect:"none",audioReactive:true,lights:true,scale:1,rotation:0,image:null};
-socket.on("connect",()=>{socket.emit("identify","controller");$("connection").textContent="Controller connected";$("connection").classList.add("ok")});
-socket.on("disconnect",()=>{$("connection").textContent="Reconnecting...";$("connection").classList.remove("ok")});
-socket.on("connection-status",d=>{$("tv").textContent=d.viewers?"TV connected":"TV offline"});
-socket.on("initial-state",s=>Object.assign(state,s||{}));
-function send(){socket.emit("display-settings",state)}
-function update(){send();localStorage.setItem("rwTV",JSON.stringify(state))}
-function set(k,v){state[k]=v;update()}
-modes.forEach((m,i)=>{let b=document.createElement("button");b.textContent=m;b.onclick=()=>{state.mode=i;state.auto=false;sync();};$("modes").appendChild(b)});
-function sync(){document.querySelectorAll("#modes button").forEach((b,i)=>b.classList.toggle("active",i===state.mode));$("auto").textContent="Auto Cycle: "+(state.auto?"ON":"OFF");$("speed").value=state.speed;$("intensity").value=state.intensity;$("brightness").value=state.brightness;$("color").value=state.color;$("audioReactive").checked=state.audioReactive;$("lights").checked=state.lights;$("effect").value=state.effect;$("scale").value=state.scale;$("rotation").value=state.rotation;["speedV","intV","brightV"].forEach((id,i)=>$(id).textContent=Math.round([state.speed/3,state.intensity/2,state.brightness/1.5][i]*100)+"%");$("scaleV").textContent=Math.round(state.scale*100)+"%";$("rotV").textContent=state.rotation+"°";send()}
-$("auto").onclick=()=>{state.auto=!state.auto;update();sync()};$("speed").oninput=e=>{state.speed=+e.target.value;update();$("speedV").textContent=Math.round(state.speed/3*100)+"%"};$("intensity").oninput=e=>{state.intensity=+e.target.value;update();$("intV").textContent=Math.round(state.intensity/2*100)+"%"};$("brightness").oninput=e=>{state.brightness=+e.target.value;update();$("brightV").textContent=Math.round(state.brightness/1.5*100)+"%"};
-$("color").oninput=e=>set("color",e.target.value);$("audioReactive").onchange=e=>set("audioReactive",e.target.checked);$("lights").onchange=e=>set("lights",e.target.checked);$("effect").onchange=e=>set("effect",e.target.value);
-$("scale").oninput=e=>{state.scale=+e.target.value;update();$("scaleV").textContent=Math.round(state.scale*100)+"%"};$("rotation").oninput=e=>{state.rotation=+e.target.value;update();$("rotV").textContent=state.rotation+"°"};
-$("file").onchange=e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{state.image=r.result;$("pic").src=r.result;update()};r.readAsDataURL(f)};$("send").onclick=()=>state.image&&update();$("clear").onclick=()=>{state.image=null;socket.emit("reset-display")};
-$("reset").onclick=$("reset2").onclick=()=>socket.emit("reset-display");$("fullscreen").onclick=()=>socket.emit("display-settings",{fullscreen:true});
-const scenes={Sunset:["#ff6b35",3],Ocean:["#008cff",0],Forest:["#16a34a",5],Neon:["#d946ef",2],Ice:["#67e8f9",4],Party:["#ff2bd6",1]};
-for(const [name,v] of Object.entries(scenes)){let b=document.createElement("button");b.textContent=name;b.onclick=()=>{state.color=v[0];state.mode=v[1];state.auto=false;update();sync()};$("lightScenes").appendChild(b)}
-for(const [name,c] of [["Cinema","#ff7a18"],["Galaxy","#6d5dfc"],["Fireworks","#ff3366"],["Neon","#00e5ff"],["Sunset","#ff6b35"],["Ocean","#008cff"],["Forest","#16a34a"],["Rainbow","#d946ef"]]){let b=document.createElement("button");b.textContent=name;b.onclick=()=>{state.color=c;state.lights=true;state.auto=false;state.mode=Math.floor(Math.random()*modes.length);update();sync()};$("presets").appendChild(b)}
-document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));t.classList.add("active");["display","lights","effects","pictureTab","presets"].forEach(id=>$(id).hidden=id!==t.dataset.tab&&!(t.dataset.tab==="picture"&&id==="pictureTab"))});
-$("mic").onclick=async()=>{try{let stream=await navigator.mediaDevices.getUserMedia({audio:true}),a=new AudioContext(),s=a.createMediaStreamSource(stream),an=a.createAnalyser();an.fftSize=256;s.connect(an);let ar=new Uint8Array(an.frequencyBinCount);$("audio").textContent="Microphone active";(function loop(){an.getByteFrequencyData(ar);let n=ar.reduce((x,y)=>x+y,0)/ar.length;socket.emit("audio-level",{level:n});requestAnimationFrame(loop)})()}catch(e){$("audio").textContent="Microphone unavailable"}};
-$("save").onclick=()=>{localStorage.setItem("rwTVPreset",JSON.stringify(state));alert("Current TV preset saved.")};
-const old=localStorage.getItem("rwTV");if(old)try{Object.assign(state,JSON.parse(old))}catch{}sync();
+const modes=["Galaxy","Fireworks","Neon Tunnel","Sun","Starfield","Aurora","Cosmic Waves","Meteor","Plasma","Hyperspace","Matrix","Ocean","Lava","Electric","Rainbow Rings","Bubbles","Laser Grid","Snow","Confetti","Vortex"];
+const colors=["#ff1744","#ff6d00","#ffd600","#76ff03","#00e676","#00b8d4","#00e5ff","#2979ff","#651fff","#d500f9","#ff4081","#ffffff"];
+const $=id=>document.getElementById(id),socket=io({transports:["websocket","polling"]});
+let state={mode:0,auto:true,speed:1,intensity:1,brightness:1,color:"#ff9800",effect:"none",audioReactive:true,lights:true,scale:1,rotation:0,image:null,light:1,glow:1};
+function send(){socket.emit("display-settings",state);localStorage.setItem("rwTV",JSON.stringify(state))}
+socket.on("connect",()=>{socket.emit("identify","controller");$("connection").textContent="Connected";$("connection").classList.add("ok")});
+socket.on("disconnect",()=>{$("connection").textContent="Reconnecting";$("connection").classList.remove("ok")});socket.on("connection-status",d=>$("tv").textContent=d.viewers?"TV Connected":"TV Offline");
+const modeBox=$("modes");modes.forEach((m,i)=>{let b=document.createElement("button");b.className="btn";b.textContent=m;b.onclick=()=>{state.mode=i;state.auto=false;sync()};modeBox.appendChild(b)});
+["Pulse","Rainbow","Flash","Vignette","Spotlight","Colour Wave"].forEach((x,i)=>{let b=document.createElement("button");b.className="btn";b.textContent=x;b.onclick=()=>{state.effect=x.toLowerCase().replace(" ","");send()};$("effects").appendChild(b)});
+["Solid","Pulse","Breathe","Rainbow","Wave","Strobe","Audio"].forEach(x=>{let b=document.createElement("button");b.className="btn";b.textContent=x;b.onclick=()=>{state.effect=x.toLowerCase();send()};$("lightModes").appendChild(b)});
+colors.forEach(c=>{let b=document.createElement("button");b.className="swatch";b.style.background=c;b.onclick=()=>{state.color=c;sync()};$("palette").appendChild(b);let d=b.cloneNode();d.onclick=()=>{state.color=c;sync()};$("palette2").appendChild(d)});
+const scenes={Sunset:["#ff6b35",3],Ocean:["#008cff",11],Forest:["#16a34a",4],Neon:["#d946ef",2],Ice:["#67e8f9",5],Party:["#ff2bd6",1],Gold:["#ffd600",3],Cyber:["#00e5ff",16],Galaxy:["#651fff",0],Fire:["#ff1744",12],Candy:["#ff4081",14],Arctic:["#fff",7],Jungle:["#00e676",11],Rainbow:["#d500f9",14],Cinema:["#ff7a18",3],Vortex:["#7c4dff",19]};
+Object.entries(scenes).forEach(([n,v])=>{let b=document.createElement("button");b.textContent=n;b.style.background=v[0];b.onclick=()=>{state.color=v[0];state.mode=v[1];state.auto=false;sync()};$("scenes").appendChild(b)});
+function sync(){document.querySelectorAll("#modes .btn").forEach((b,i)=>b.classList.toggle("active",i===state.mode));$("auto").checked=state.auto;$("audioReactive").checked=state.audioReactive;$("lights").checked=state.lights;$("speed").value=state.speed;$("intensity").value=state.intensity;$("brightness").value=state.brightness;$("light").value=state.light;$("glow").value=state.glow;$("scale").value=state.scale;$("rotation").value=state.rotation;$("custom").value=state.color;$("c1").value=state.color;updateLabels();send()}
+function updateLabels(){$("sv").textContent=Math.round(state.speed/3*100)+"%";$("iv").textContent=Math.round(state.intensity/2*100)+"%";$("bv").textContent=Math.round(state.brightness/1.5*100)+"%";$("lv").textContent=Math.round(state.light/2*100)+"%";$("gv").textContent=Math.round(state.glow/2*100)+"%";$("scv").textContent=Math.round(state.scale*100)+"%";$("rv").textContent=state.rotation+"°"}
+$("auto").onchange=e=>{state.auto=e.target.checked;send()};$("audioReactive").onchange=e=>{state.audioReactive=e.target.checked;send()};$("lights").onchange=e=>{state.lights=e.target.checked;send()};["speed","intensity","brightness","light","glow","scale","rotation"].forEach(k=>$(k).oninput=e=>{state[k]=+e.target.value;updateLabels();send()});$("custom").oninput=e=>{state.color=e.target.value;send()};$("c1").oninput=e=>{state.color=e.target.value;send()};$("ci").oninput=e=>{state.intensity=+e.target.value;send()};
+$("file").onchange=e=>{let f=e.target.files[0];if(!f)return;let r=new FileReader;r.onload=()=>{state.image=r.result;$("pic").src=r.result;send()};r.readAsDataURL(f)};$("send").onclick=send;$("clear").onclick=()=>socket.emit("reset-display");$("reset").onclick=()=>socket.emit("reset-display");$("full").onclick=()=>socket.emit("display-settings",{fullscreen:true});$("save").onclick=()=>{localStorage.setItem("rwTVPreset",JSON.stringify(state));$("save").textContent="Saved"};$("mic").onclick=async()=>{try{let st=await navigator.mediaDevices.getUserMedia({audio:true}),a=new AudioContext(),src=a.createMediaStreamSource(st),an=a.createAnalyser();an.fftSize=256;src.connect(an);let ar=new Uint8Array(an.frequencyBinCount);$("audio").textContent="Live";(function f(){an.getByteFrequencyData(ar);socket.emit("audio-level",{level:ar.reduce((x,y)=>x+y,0)/ar.length});requestAnimationFrame(f)})()}catch{$("audio").textContent="Blocked"}};
+document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));t.classList.add("active");document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active",p.id===t.dataset.page))});
+let old=localStorage.getItem("rwTV");if(old)try{Object.assign(state,JSON.parse(old))}catch{}sync();
 </script></body></html>
