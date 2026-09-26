@@ -16,62 +16,54 @@ html,body{
     width:100%;
     height:100%;
     overflow:hidden;
-    background:black;
+    background:#000;
     font-family:Arial,sans-serif;
 }
 
-#background{
+body{
+    cursor:none;
+}
+
+/* MOVING BACKGROUND */
+#bg{
     position:fixed;
-    inset:-20%;
+    inset:-30%;
     background:
-        radial-gradient(circle at center,
-        #ffcc00,
-        #ff7a00,
-        #ff3300,
-        #000);
-    transform:scale(1);
-    transition:transform .15s linear;
-    filter:blur(40px);
-}
-
-#image{
-    position:absolute;
-    inset:0;
-    margin:auto;
-    max-width:90%;
-    max-height:85%;
-    object-fit:contain;
-    border-radius:25px;
-    box-shadow:
-        0 0 50px rgba(255,255,255,.2),
-        0 0 100px rgba(255,122,0,.3);
-}
-
-#overlay{
-    position:absolute;
-    inset:0;
-    pointer-events:none;
-    background:
-        linear-gradient(
-            to top,
-            rgba(0,0,0,.35),
-            transparent 40%
+        radial-gradient(
+            circle at 50% 50%,
+            #fff3a3 0%,
+            #ffd43b 15%,
+            #ff9800 38%,
+            #ff4d00 62%,
+            #080808 100%
         );
+    filter:blur(65px);
+    transform:scale(1);
+    will-change:transform;
 }
 
-#status{
-    position:absolute;
-    top:20px;
-    left:20px;
-    color:white;
-    background:rgba(0,0,0,.4);
-    padding:10px 15px;
-    border-radius:12px;
-    backdrop-filter:blur(10px);
-    font-size:14px;
+/* EXTRA MOVING LIGHT */
+#light{
+    position:fixed;
+    width:45vw;
+    height:45vw;
+    left:50%;
+    top:50%;
+    transform:translate(-50%,-50%);
+    border-radius:50%;
+    background:
+        radial-gradient(
+            circle,
+            rgba(255,255,255,.25),
+            rgba(255,170,0,.12),
+            transparent 70%
+        );
+    filter:blur(30px);
+    pointer-events:none;
 }
 
-#waveCanvas{
+/* VISUALISER */
+#canvas{
     position:absolute;
     inset:0;
     width:100%;
@@ -79,70 +71,224 @@ html,body{
     pointer-events:none;
 }
 
-#help{
+/* IMAGE */
+#picture{
     position:absolute;
+    top:50%;
+    left:50%;
+
+    max-width:88%;
+    max-height:88%;
+
+    object-fit:contain;
+
+    border-radius:24px;
+
+    box-shadow:
+        0 0 35px rgba(255,255,255,.18),
+        0 0 90px rgba(255,140,0,.35);
+
+    opacity:0;
+
+    transition:
+        opacity .5s ease,
+        filter .15s linear;
+
+    will-change:
+        transform,
+        filter;
+}
+
+/* STATUS */
+#status{
+    position:absolute;
+    top:20px;
+    left:20px;
+
+    padding:11px 17px;
+
+    color:white;
+
+    background:rgba(0,0,0,.45);
+
+    border:1px solid rgba(255,255,255,.12);
+
+    border-radius:14px;
+
+    backdrop-filter:blur(12px);
+
+    font-size:14px;
+
+    z-index:10;
+}
+
+/* CLOCK */
+#clock{
+    position:absolute;
+    top:20px;
+    right:20px;
+
+    padding:10px 16px;
+
+    color:white;
+
+    background:rgba(0,0,0,.45);
+
+    border-radius:14px;
+
+    backdrop-filter:blur(12px);
+
+    font-size:24px;
+
+    z-index:10;
+}
+
+/* CONNECTION DOT */
+#dot{
+    display:inline-block;
+
+    width:9px;
+    height:9px;
+
+    margin-right:7px;
+
+    border-radius:50%;
+
+    background:#ff3b30;
+}
+
+/* HINT */
+#hint{
+    position:absolute;
+
     bottom:20px;
     left:50%;
+
     transform:translateX(-50%);
+
     color:white;
-    background:rgba(0,0,0,.4);
-    padding:12px 18px;
+
+    background:rgba(0,0,0,.42);
+
+    padding:11px 18px;
+
     border-radius:14px;
-    backdrop-filter:blur(10px);
+
+    backdrop-filter:blur(12px);
+
+    font-size:14px;
+
+    z-index:10;
+
+    opacity:.8;
+
+    transition:
+        opacity .5s ease;
+}
+
+/* HIDE UI AFTER START */
+body.started #hint{
+    opacity:0;
+}
+
+body.started #status{
+    opacity:.35;
 }
 </style>
 </head>
+
 <body>
 
-<div id="background"></div>
+<div id="bg"></div>
 
-<canvas id="waveCanvas"></canvas>
+<div id="light"></div>
 
-<img id="image">
+<canvas id="canvas"></canvas>
 
-<div id="overlay"></div>
+<img
+    id="picture"
+    alt=""
+>
 
 <div id="status">
-Waiting for controller...
+    <span id="dot"></span>
+    <span id="statusText">
+        Connecting...
+    </span>
 </div>
 
-<div id="help">
-TV Remote: ▲▼ change size • ◀▶ rotate
+<div id="clock">
+    --:--
 </div>
+
+<div id="hint">
+    TV Remote: ▲▼ scale • ◀▶ rotate • OK fullscreen
+</div>
+
+
+<script src="/socket.io/socket.io.js"></script>
 
 <script>
 
-const channel =
-    new BroadcastChannel(
-        "rohans_tv_display"
-    );
+/* =====================================================
+   SOCKET CONNECTION
+===================================================== */
 
-const image =
-    document.getElementById(
-        "image"
-    );
+const socket = io({
+    transports:["websocket","polling"],
+    reconnection:true,
+    reconnectionAttempts:Infinity,
+    reconnectionDelay:1000,
+    timeout:10000
+});
 
-const background =
-    document.getElementById(
-        "background"
-    );
 
-const statusBox =
-    document.getElementById(
-        "status"
-    );
+/* =====================================================
+   ELEMENTS
+===================================================== */
+
+const bg =
+    document.getElementById("bg");
+
+const light =
+    document.getElementById("light");
+
+const picture =
+    document.getElementById("picture");
 
 const canvas =
-    document.getElementById(
-        "waveCanvas"
-    );
+    document.getElementById("canvas");
 
 const ctx =
     canvas.getContext("2d");
 
+const statusText =
+    document.getElementById("statusText");
+
+const dot =
+    document.getElementById("dot");
+
+
+/* =====================================================
+   STATE
+===================================================== */
+
 let audioLevel = 0;
+
+let smoothAudio = 0;
+
 let scale = 1;
+
 let rotation = 0;
+
+let connected = false;
+
+let hasPicture = false;
+
+
+/* =====================================================
+   CANVAS
+===================================================== */
 
 function resizeCanvas(){
 
@@ -161,162 +307,39 @@ window.addEventListener(
 
 resizeCanvas();
 
-channel.onmessage = e => {
 
-    const data = e.data;
+/* =====================================================
+   IDENTIFY AS TV VIEWER
+===================================================== */
 
-    if(data.type === "image"){
+function identify(){
 
-        image.src =
-            data.image;
-
-        statusBox.textContent =
-            "Image received";
-
-    }
-
-    if(data.type === "audio"){
-
-        audioLevel =
-            data.level;
-
-    }
-
-};
-
-function draw(){
-
-    requestAnimationFrame(
-        draw
+    socket.emit(
+        "identify",
+        "viewer"
     );
-
-    const w = canvas.width;
-    const h = canvas.height;
-
-    ctx.clearRect(
-        0,
-        0,
-        w,
-        h
-    );
-
-    background.style.transform =
-        `scale(${1 + audioLevel/300})`;
-
-    image.style.transform =
-        `scale(${scale})
-         rotate(${rotation}deg)`;
-
-    ctx.lineWidth = 4;
-
-    const gradient =
-        ctx.createLinearGradient(
-            0,
-            h,
-            0,
-            0
-        );
-
-    gradient.addColorStop(
-        0,
-        "#ff7a00"
-    );
-
-    gradient.addColorStop(
-        1,
-        "#ffd54f"
-    );
-
-    ctx.strokeStyle =
-        gradient;
-
-    ctx.beginPath();
-
-    for(
-        let x=0;
-        x<w;
-        x+=8
-    ){
-
-        const y =
-            h*0.85 +
-            Math.sin(
-                x*0.02 +
-                Date.now()*0.004
-            ) *
-            (audioLevel*2);
-
-        if(x===0){
-
-            ctx.moveTo(
-                x,
-                y
-            );
-
-        }else{
-
-            ctx.lineTo(
-                x,
-                y
-            );
-
-        }
-
-    }
-
-    ctx.stroke();
 
 }
 
-draw();
+identify();
 
-/* TV REMOTE / KEYBOARD */
 
-document.addEventListener(
-    "keydown",
-    e => {
+/* =====================================================
+   CONNECTION
+===================================================== */
 
-        if(
-            e.key === "ArrowUp"
-        ){
+socket.on(
+    "connect",
+    () => {
 
-            scale += 0.05;
+        connected = true;
 
-        }
+        statusText.textContent =
+            "TV Connected";
 
-        if(
-            e.key === "ArrowDown"
-        ){
+        dot.style.background =
+            "#32d74b";
 
-            scale =
-                Math.max(
-                    0.3,
-                    scale - 0.05
-                );
-
-        }
-
-        if(
-            e.key === "ArrowLeft"
-        ){
-
-            rotation -= 5;
-
-        }
-
-        if(
-            e.key === "ArrowRight"
-        ){
-
-            rotation += 5;
-
-        }
-
-    }
-);
-
-</script>
-
-</body>
-</html>
+        /*
+         Tell server again
 ```
