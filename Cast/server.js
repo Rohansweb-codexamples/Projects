@@ -106,7 +106,16 @@ let currentState = {
     image: null,
     audioLevel: 0,
     scale: 1,
-    rotation: 0
+    rotation: 0,
+    mode: 0,
+    auto: true,
+    speed: 1,
+    intensity: 1,
+    brightness: 1,
+    color: "#ff9800",
+    effect: "none",
+    audioReactive: true,
+    lights: true
 };
 
 let controllers = 0;
@@ -181,16 +190,27 @@ io.on("connection", (socket) => {
         socket.broadcast.emit("image-rotation", { rotation });
     });
 
+    socket.on("display-settings", (data) => {
+        if (socket.role !== "controller" || !data || typeof data !== "object") return;
+        const allowed = ["mode","auto","speed","intensity","brightness","color","effect","audioReactive","lights"];
+        for (const key of allowed) {
+            if (Object.prototype.hasOwnProperty.call(data,key)) currentState[key]=data[key];
+        }
+        io.emit("display-settings", currentState);
+    });
+
     socket.on("animation-mode", (data) => {
         if (socket.role !== "controller") return;
         const mode = Number(data && data.mode);
         if (!Number.isInteger(mode) || mode < 0 || mode > 9) return;
+        currentState.mode = mode;
         io.emit("animation-mode", { mode });
     });
 
     socket.on("animation-auto", (data) => {
         if (socket.role !== "controller") return;
-        io.emit("animation-auto", { enabled: Boolean(data && data.enabled) });
+        currentState.auto = Boolean(data && data.enabled);
+        io.emit("animation-auto", { enabled: currentState.auto });
     });
 
     socket.on("reset-display", () => {
@@ -200,7 +220,16 @@ io.on("connection", (socket) => {
             image: null,
             audioLevel: 0,
             scale: 1,
-            rotation: 0
+            rotation: 0,
+            mode: 0,
+            auto: true,
+            speed: 1,
+            intensity: 1,
+            brightness: 1,
+            color: "#ff9800",
+            effect: "none",
+            audioReactive: true,
+            lights: true
         };
 
         io.emit("reset-display");
