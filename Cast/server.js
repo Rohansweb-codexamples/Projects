@@ -18,29 +18,88 @@ const io = new Server(server, {
 });
 
 const PORT = process.env.PORT || 3000;
-const PUBLIC_DIR = path.join(__dirname, "public");
+const ROOT_DIR = __dirname;
+const PUBLIC_DIR = path.join(ROOT_DIR, "public");
 
 if (!fs.existsSync(PUBLIC_DIR)) {
     fs.mkdirSync(PUBLIC_DIR, { recursive: true });
 }
 
-app.use(express.static(PUBLIC_DIR));
-app.use(express.json({ limit: "100mb" }));
+console.log("Cast root:", ROOT_DIR);
+console.log("Public folder:", PUBLIC_DIR);
+console.log("Public exists:", fs.existsSync(PUBLIC_DIR));
+console.log("Files:", fs.existsSync(PUBLIC_DIR) ? fs.readdirSync(PUBLIC_DIR) : []);
 
-app.get("/health", (req, res) => {
-    res.json({
-        ok: true,
-        service: "Rohans Web TV Display",
-        time: new Date().toISOString()
-    });
+app.use(express.json({ limit: "100mb" }));
+app.use(express.urlencoded({ extended: true, limit: "100mb" }));
+
+// Serve every file inside Cast/public
+app.use(express.static(PUBLIC_DIR, {
+    extensions: ["html"],
+    index: "index.html"
+}));
+
+// Explicit pages
+app.get("/", (req, res) => {
+    const file = path.join(PUBLIC_DIR, "index.html");
+
+    if (!fs.existsSync(file)) {
+        return res.status(404).send(
+            "<h1>Rohans Web TV Display</h1><p>index.html was not found in Cast/public.</p>"
+        );
+    }
+
+    res.sendFile(file);
 });
 
-app.get("/", (req, res) => {
+app.get("/index.html", (req, res) => {
     res.sendFile(path.join(PUBLIC_DIR, "index.html"));
 });
 
 app.get("/viewer", (req, res) => {
     res.sendFile(path.join(PUBLIC_DIR, "viewer.html"));
+});
+
+app.get("/viewer.html", (req, res) => {
+    res.sendFile(path.join(PUBLIC_DIR, "viewer.html"));
+});
+
+// Editor route: supports editor.html if present
+app.get("/editor", (req, res) => {
+    const file = path.join(PUBLIC_DIR, "editor.html");
+
+    if (!fs.existsSync(file)) {
+        return res.status(404).send(
+            "<h1>Editor not found</h1><p>Create Cast/public/editor.html to use the editor.</p>"
+        );
+    }
+
+    res.sendFile(file);
+});
+
+app.get("/editor.html", (req, res) => {
+    const file = path.join(PUBLIC_DIR, "editor.html");
+
+    if (!fs.existsSync(file)) {
+        return res.status(404).send(
+            "<h1>Editor not found</h1><p>Create Cast/public/editor.html to use the editor.</p>"
+        );
+    }
+
+    res.sendFile(file);
+});
+
+app.get("/health", (req, res) => {
+    res.json({
+        ok: true,
+        service: "Rohans Web TV Display",
+        time: new Date().toISOString(),
+        files: {
+            index: fs.existsSync(path.join(PUBLIC_DIR, "index.html")),
+            viewer: fs.existsSync(path.join(PUBLIC_DIR, "viewer.html")),
+            editor: fs.existsSync(path.join(PUBLIC_DIR, "editor.html"))
+        }
+    });
 });
 
 let currentState = {
@@ -82,12 +141,6 @@ io.on("connection", (socket) => {
 
         currentState.image = data.image;
 
-        console.log(
-            "Picture received:",
-            Math.round(data.image.length / 1024),
-            "KB"
-        );
-
         io.emit("controller-image", {
             image: data.image
         });
@@ -97,7 +150,6 @@ io.on("connection", (socket) => {
         if (socket.role !== "controller") return;
 
         let level = Number(data && data.level);
-
         if (!Number.isFinite(level)) level = 0;
 
         level = Math.max(0, Math.min(255, level));
@@ -110,7 +162,6 @@ io.on("connection", (socket) => {
         if (socket.role !== "controller") return;
 
         let scale = Number(data && data.scale);
-
         if (!Number.isFinite(scale)) return;
 
         scale = Math.max(0.2, Math.min(3, scale));
@@ -123,7 +174,6 @@ io.on("connection", (socket) => {
         if (socket.role !== "controller") return;
 
         let rotation = Number(data && data.rotation);
-
         if (!Number.isFinite(rotation)) return;
 
         currentState.rotation = rotation;
@@ -175,7 +225,10 @@ function sendConnectionStatus() {
 server.listen(PORT, "0.0.0.0", () => {
     console.log("=================================");
     console.log("Rohans Web TV Display Server");
-    console.log("Server running on port:", PORT);
+    console.log("Port:", PORT);
+    console.log("Index:", path.join(PUBLIC_DIR, "index.html"));
+    console.log("Viewer:", path.join(PUBLIC_DIR, "viewer.html"));
+    console.log("Editor:", path.join(PUBLIC_DIR, "editor.html"));
     console.log("=================================");
 });
 
