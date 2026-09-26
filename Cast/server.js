@@ -181,6 +181,18 @@ io.on("connection", (socket) => {
         socket.broadcast.emit("image-rotation", { rotation });
     });
 
+    socket.on("animation-mode", (data) => {
+        if (socket.role !== "controller") return;
+        const mode = Number(data && data.mode);
+        if (!Number.isInteger(mode) || mode < 0 || mode > 9) return;
+        io.emit("animation-mode", { mode });
+    });
+
+    socket.on("animation-auto", (data) => {
+        if (socket.role !== "controller") return;
+        io.emit("animation-auto", { enabled: Boolean(data && data.enabled) });
+    });
+
     socket.on("reset-display", () => {
         if (socket.role !== "controller") return;
 
