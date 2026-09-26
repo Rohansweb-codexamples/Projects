@@ -230,7 +230,30 @@ value="1">
 
 <script>
 
-const socket = io();
+const socket = io({
+    transports:["websocket","polling"],
+    reconnection:true,
+    reconnectionAttempts:Infinity,
+    reconnectionDelay:1000,
+    timeout:10000
+});
+
+socket.on("connect", () => {
+    socket.emit("identify", "controller");
+    document.getElementById("connectionStatus").textContent =
+        "Connected to TV Server";
+});
+
+socket.on("disconnect", () => {
+    document.getElementById("connectionStatus").textContent =
+        "Disconnected - reconnecting...";
+});
+
+socket.on("connect_error", (err) => {
+    document.getElementById("connectionStatus").textContent =
+        "Connection error: " + (err.message || "Server unavailable");
+    console.error("Socket connection error:", err);
+});
 
 const imageInput =
 document.getElementById(
@@ -277,17 +300,7 @@ resizeCanvas
 
 resizeCanvas();
 
-socket.on(
-"connect",
-()=>{
 
-document.getElementById(
-"connectionStatus"
-).textContent =
-"Connected to Server";
-
-}
-);
 
 imageInput.addEventListener(
 "change",
