@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Rohans Web TV Display</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b1020'/%3E%3Crect x='9' y='13' width='46' height='34' rx='5' fill='%231d2a4a' stroke='%23ffb300' stroke-width='3'/%3E%3Ccircle cx='32' cy='30' r='9' fill='%23ff6d00'/%3E%3Cpath d='M22 54h20M32 47v7' stroke='%23ffb300' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E">
 <style>
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;font-family:Arial,sans-serif}body{cursor:none}
 #scene{position:fixed;inset:0;background:#000;overflow:hidden}
@@ -29,12 +30,10 @@ const picture=document.getElementById("picture"),statusText=document.getElementB
 let mode=0,auto=true,audioLevel=0,smooth=0,scale=1,rotation=0,last=performance.now(),modeTimer=0,nextMode=22000,speed=1,intensity=1,brightness=1,color="#ff9800",effect="none",audioReactive=true,lights=true;
 const stars=Array.from({length:360},()=>({x:Math.random(),y:Math.random(),z:Math.random(),speed:.3+Math.random()*1.7}));
 let fireworks=[];
-
 function resize(){bgCanvas.width=fxCanvas.width=innerWidth;bgCanvas.height=fxCanvas.height=innerHeight}addEventListener("resize",resize);resize();
 function setMode(m){mode=((m%10)+10)%10;modeTimer=0;nextMode=18000+Math.random()*16000;modeText.textContent=modes[mode];fireworks=[]}
 function rand(a,b){return Math.random()*(b-a)+a}
 function hsla(h,s,l,a=1){return `hsla(${h},${s}%,${l}%,${a})`}
-
 socket.on("connect",()=>{statusText.textContent="TV Connected";dot.style.background="#32d74b";socket.emit("identify","viewer")});
 socket.on("disconnect",()=>{statusText.textContent="Disconnected - reconnecting...";dot.style.background="#f33"});
 socket.on("connect_error",e=>{statusText.textContent="Connection error"});
@@ -48,31 +47,21 @@ socket.on("animation-mode",d=>{if(Number.isInteger(Number(d?.mode)))setMode(Numb
 socket.on("animation-auto",d=>{auto=Boolean(d?.enabled)});
 socket.on("reset-display",()=>{picture.removeAttribute("src");picture.style.opacity=0;scale=1;rotation=0;audioLevel=0;speed=1;intensity=1;brightness=1;color="#ff9800";effect="none";lights=true;setMode(0)});
 function applyState(s){if(!s)return;if(s.image!==undefined&&s.image)showImage(s.image);if(Number.isFinite(+s.scale))scale=+s.scale;if(Number.isFinite(+s.rotation))rotation=+s.rotation;if(Number.isInteger(+s.mode))setMode(+s.mode);if(typeof s.auto==="boolean")auto=s.auto;if(Number.isFinite(+s.speed))speed=+s.speed;if(Number.isFinite(+s.intensity))intensity=+s.intensity;if(Number.isFinite(+s.brightness))brightness=+s.brightness;if(typeof s.color==="string")color=s.color;if(typeof s.effect==="string")effect=s.effect;if(typeof s.audioReactive==="boolean")audioReactive=s.audioReactive;if(typeof s.lights==="boolean")lights=s.lights;applyPicture()}
-
 function showImage(src){picture.src=src;picture.onload=()=>picture.style.opacity=1;applyPicture()}
 function applyPicture(){picture.style.transform=`translate(-50%,-50%) scale(${scale}) rotate(${rotation}deg)`}
 function fullscreen(){(document.documentElement.requestFullscreen||document.documentElement.webkitRequestFullscreen)?.call(document.documentElement)}
-addEventListener("keydown",e=>{
- if(e.key==="ArrowUp"){scale=Math.min(3,scale+.1);applyPicture();socket.emit("image-scale",{scale})}
- if(e.key==="ArrowDown"){scale=Math.max(.2,scale-.1);applyPicture();socket.emit("image-scale",{scale})}
- if(e.key==="ArrowLeft"){rotation-=5;applyPicture();socket.emit("image-rotation",{rotation})}
- if(e.key==="ArrowRight"){rotation+=5;applyPicture();socket.emit("image-rotation",{rotation})}
- if(e.key==="Enter"||e.key==="NumpadEnter")fullscreen();
-});
-
-function background(t,p){
- const w=innerWidth,h=innerHeight,cx=w/2,cy=h/2;
- if(mode===0){bg.fillStyle="rgba(1,0,15,.28)";bg.fillRect(0,0,w,h);stars.forEach(s=>{let a=t*.00015*s.speed,x=cx+Math.cos(a+s.x*20)*(s.x*w*.8+30),y=cy+Math.sin(a+s.x*20)*(s.y*h*.8+30);bg.fillStyle=hsla(190+s.x*130,100,80,.45+s.z*.5);bg.beginPath();bg.arc(x,y,1+s.z*3+p*2,0,7);bg.fill()})}
- else if(mode===1){bg.fillStyle="rgba(2,3,15,.2)";bg.fillRect(0,0,w,h);if(Math.random()<.03+p*.09){let x=rand(w*.1,w*.9),y=rand(h*.12,h*.65);for(let i=0;i<60;i++){let a=rand(0,7),sp=rand(1.5,6);fireworks.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:1,h:rand(0,360)})}}fireworks.forEach(f=>{f.x+=f.vx;f.y+=f.vy;f.vy+=.045;f.life-=.014;bg.fillStyle=hsla(f.h,100,65,f.life);bg.beginPath();bg.arc(f.x,f.y,2+p*3,0,7);bg.fill()});fireworks=fireworks.filter(f=>f.life>0)}
- else if(mode===2){bg.fillStyle="rgba(0,0,10,.3)";bg.fillRect(0,0,w,h);for(let i=0;i<26;i++){let z=((i/26+t*.00035)%1),r=(1-z)*Math.max(w,h)*.8+20;bg.strokeStyle=hsla((i*25+t*.03)%360,100,60,.25+.7*z);bg.lineWidth=3+p*5;bg.beginPath();bg.arc(cx,cy,r,0,7);bg.stroke()}}
- else if(mode===3){bg.fillStyle="rgba(15,3,0,.22)";bg.fillRect(0,0,w,h);let r=Math.min(w,h)*.2*(1+p*.25),g=bg.createRadialGradient(cx,cy,0,cx,cy,r*2.2);g.addColorStop(0,"#fff");g.addColorStop(.2,"#fff36a");g.addColorStop(.5,"#ff8a00");g.addColorStop(1,"rgba(255,30,0,0)");bg.fillStyle=g;bg.beginPath();bg.arc(cx,cy,r*2.2,0,7);bg.fill();for(let i=0;i<35;i++){let a=i*.7+t*.0004;bg.strokeStyle=hsla(25,100,60,.25);bg.lineWidth=3;bg.beginPath();bg.moveTo(cx+Math.cos(a)*r*.7,cy+Math.sin(a)*r*.7);bg.lineTo(cx+Math.cos(a)*r*rand(.8,1.5),cy+Math.sin(a)*r*rand(.8,1.5));bg.stroke()}}
- else if(mode===4){bg.fillStyle="rgba(0,0,0,.25)";bg.fillRect(0,0,w,h);stars.forEach(s=>{s.z-=.004+s.speed*.003+p*.025;if(s.z<.02)s.z=1;let x=(s.x-.5)*w/s.z+cx,y=(s.y-.5)*h/s.z+cy;bg.strokeStyle="rgba(255,255,255,.8)";bg.beginPath();bg.moveTo(x,y);bg.lineTo(cx+(x-cx)*(1+.04/s.z),cy+(y-cy)*(1+.04/s.z));bg.stroke()})}
- else if(mode===5){bg.fillStyle="rgba(0,8,18,.25)";bg.fillRect(0,0,w,h);for(let i=0;i<12;i++){bg.beginPath();for(let x=0;x<=w;x+=15){let y=h*.35+i*35+Math.sin(x*.006+t*.001+i)*90*(1+p);x?bg.lineTo(x,y):bg.moveTo(x,y)}bg.strokeStyle=hsla(150+i*18,100,65,.16);bg.lineWidth=25;bg.stroke()}}
- else if(mode===6){bg.fillStyle="rgba(5,0,20,.22)";bg.fillRect(0,0,w,h);for(let j=0;j<14;j++){bg.beginPath();for(let x=0;x<=w;x+=12){let y=h/2+j*25+Math.sin(x*.008+t*.002+j)*60*(1+p);x?bg.lineTo(x,y):bg.moveTo(x,y)}bg.strokeStyle=hsla(190+j*12,100,65,.2);bg.lineWidth=5;bg.stroke()}}
- else if(mode===7){bg.fillStyle="rgba(0,0,10,.3)";bg.fillRect(0,0,w,h);for(let i=0;i<55;i++){let x=(i*193+t*.25*(1+p))%(w+400)-200,y=(i*83+t*.12)%(h+300)-150;bg.strokeStyle=hsla(200+i*3,100,75,.4);bg.lineWidth=2+p*3;bg.beginPath();bg.moveTo(x,y);bg.lineTo(x-100*(1+p),y-55*(1+p));bg.stroke()}}
- else if(mode===8){let g=bg.createLinearGradient(0,0,w,h);g.addColorStop(0,hsla((t*.03)%360,90,30));g.addColorStop(.5,hsla((t*.05+130)%360,90,35));g.addColorStop(1,hsla((t*.02+260)%360,90,25));bg.fillStyle=g;bg.fillRect(0,0,w,h);for(let i=0;i<10;i++){bg.strokeStyle=hsla((t*.1+i*35)%360,100,65,.3);bg.lineWidth=30;bg.beginPath();bg.arc(cx,cy,100+i*90+Math.sin(t*.002+i)*40*(1+p),0,7);bg.stroke()}}
- else {bg.fillStyle="rgba(0,0,0,.28)";bg.fillRect(0,0,w,h);stars.forEach(s=>{s.z-=.012+s.speed*.008+p*.04;if(s.z<.02)s.z=1;let x=(s.x-.5)*w/s.z+cx,y=(s.y-.5)*h/s.z+cy;bg.strokeStyle="rgba(255,255,255,.9)";bg.lineWidth=2;bg.beginPath();bg.moveTo(x,y);bg.lineTo(cx+(x-cx)*(1+.08/s.z),cy+(y-cy)*(1+.08/s.z));bg.stroke()})}
-}
+addEventListener("keydown",e=>{if(e.key==="ArrowUp"){scale=Math.min(3,scale+.1);applyPicture();socket.emit("image-scale",{scale})}if(e.key==="ArrowDown"){scale=Math.max(.2,scale-.1);applyPicture();socket.emit("image-scale",{scale})}if(e.key==="ArrowLeft"){rotation-=5;applyPicture();socket.emit("image-rotation",{rotation})}if(e.key==="ArrowRight"){rotation+=5;applyPicture();socket.emit("image-rotation",{rotation})}if(e.key==="Enter"||e.key==="NumpadEnter")fullscreen()});
+function background(t,p){const w=innerWidth,h=innerHeight,cx=w/2,cy=h/2;
+if(mode===0){bg.fillStyle="rgba(1,0,15,.28)";bg.fillRect(0,0,w,h);stars.forEach(s=>{let a=t*.00015*s.speed,x=cx+Math.cos(a+s.x*20)*(s.x*w*.8+30),y=cy+Math.sin(a+s.x*20)*(s.y*h*.8+30);bg.fillStyle=hsla(190+s.x*130,100,80,.45+s.z*.5);bg.beginPath();bg.arc(x,y,1+s.z*3+p*2,0,7);bg.fill()})}
+else if(mode===1){bg.fillStyle="rgba(2,3,15,.2)";bg.fillRect(0,0,w,h);if(Math.random()<.03+p*.09){let x=rand(w*.1,w*.9),y=rand(h*.12,h*.65);for(let i=0;i<60;i++){let a=rand(0,7),sp=rand(1.5,6);fireworks.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:1,h:rand(0,360)})}}fireworks.forEach(f=>{f.x+=f.vx;f.y+=f.vy;f.vy+=.045;f.life-=.014;bg.fillStyle=hsla(f.h,100,65,f.life);bg.beginPath();bg.arc(f.x,f.y,2+p*3,0,7);bg.fill()});fireworks=fireworks.filter(f=>f.life>0)}
+else if(mode===2){bg.fillStyle="rgba(0,0,10,.3)";bg.fillRect(0,0,w,h);for(let i=0;i<26;i++){let z=((i/26+t*.00035)%1),r=(1-z)*Math.max(w,h)*.8+20;bg.strokeStyle=hsla((i*25+t*.03)%360,100,60,.25+.7*z);bg.lineWidth=3+p*5;bg.beginPath();bg.arc(cx,cy,r,0,7);bg.stroke()}}
+else if(mode===3){bg.fillStyle="rgba(15,3,0,.22)";bg.fillRect(0,0,w,h);let r=Math.min(w,h)*.2*(1+p*.25),g=bg.createRadialGradient(cx,cy,0,cx,cy,r*2.2);g.addColorStop(0,"#fff");g.addColorStop(.2,"#fff36a");g.addColorStop(.5,"#ff8a00");g.addColorStop(1,"rgba(255,30,0,0)");bg.fillStyle=g;bg.beginPath();bg.arc(cx,cy,r*2.2,0,7);bg.fill();for(let i=0;i<35;i++){let a=i*.7+t*.0004;bg.strokeStyle=hsla(25,100,60,.25);bg.lineWidth=3;bg.beginPath();bg.moveTo(cx+Math.cos(a)*r*.7,cy+Math.sin(a)*r*.7);bg.lineTo(cx+Math.cos(a)*r*rand(.8,1.5),cy+Math.sin(a)*r*rand(.8,1.5));bg.stroke()}}
+else if(mode===4){bg.fillStyle="rgba(0,0,0,.25)";bg.fillRect(0,0,w,h);stars.forEach(s=>{s.z-=.004+s.speed*.003+p*.025;if(s.z<.02)s.z=1;let x=(s.x-.5)*w/s.z+cx,y=(s.y-.5)*h/s.z+cy;bg.strokeStyle="rgba(255,255,255,.8)";bg.beginPath();bg.moveTo(x,y);bg.lineTo(cx+(x-cx)*(1+.04/s.z),cy+(y-cy)*(1+.04/s.z));bg.stroke()})}
+else if(mode===5){bg.fillStyle="rgba(0,8,18,.25)";bg.fillRect(0,0,w,h);for(let i=0;i<12;i++){bg.beginPath();for(let x=0;x<=w;x+=15){let y=h*.35+i*35+Math.sin(x*.006+t*.001+i)*90*(1+p);x?bg.lineTo(x,y):bg.moveTo(x,y)}bg.strokeStyle=hsla(150+i*18,100,65,.16);bg.lineWidth=25;bg.stroke()}}
+else if(mode===6){bg.fillStyle="rgba(5,0,20,.22)";bg.fillRect(0,0,w,h);for(let j=0;j<14;j++){bg.beginPath();for(let x=0;x<=w;x+=12){let y=h/2+j*25+Math.sin(x*.008+t*.002+j)*60*(1+p);x?bg.lineTo(x,y):bg.moveTo(x,y)}bg.strokeStyle=hsla(190+j*12,100,65,.2);bg.lineWidth=5;bg.stroke()}}
+else if(mode===7){bg.fillStyle="rgba(0,0,10,.3)";bg.fillRect(0,0,w,h);for(let i=0;i<55;i++){let x=(i*193+t*.25*(1+p))%(w+400)-200,y=(i*83+t*.12)%(h+300)-150;bg.strokeStyle=hsla(200+i*3,100,75,.4);bg.lineWidth=2+p*3;bg.beginPath();bg.moveTo(x,y);bg.lineTo(x-100*(1+p),y-55*(1+p));bg.stroke()}}
+else if(mode===8){let g=bg.createLinearGradient(0,0,w,h);g.addColorStop(0,hsla((t*.03)%360,90,30));g.addColorStop(.5,hsla((t*.05+130)%360,90,35));g.addColorStop(1,hsla((t*.02+260)%360,90,25));bg.fillStyle=g;bg.fillRect(0,0,w,h);for(let i=0;i<10;i++){bg.strokeStyle=hsla((t*.1+i*35)%360,100,65,.3);bg.lineWidth=30;bg.beginPath();bg.arc(cx,cy,100+i*90+Math.sin(t*.002+i)*40*(1+p),0,7);bg.stroke()}}
+else{bg.fillStyle="rgba(0,0,0,.28)";bg.fillRect(0,0,w,h);stars.forEach(s=>{s.z-=.012+s.speed*.008+p*.04;if(s.z<.02)s.z=1;let x=(s.x-.5)*w/s.z+cx,y=(s.y-.5)*h/s.z+cy;bg.strokeStyle="rgba(255,255,255,.9)";bg.lineWidth=2;bg.beginPath();bg.moveTo(x,y);bg.lineTo(cx+(x-cx)*(1+.08/s.z),cy+(y-cy)*(1+.08/s.z));bg.stroke()})}}
 function draw(t){const dt=t-last;last=t;modeTimer+=dt*speed;if(auto&&modeTimer>nextMode)setMode(mode+1);smooth+=(audioLevel-smooth)*.12;const p=Math.min(1,(audioReactive?smooth:0)/255)*intensity;document.getElementById("scene").style.filter=`brightness(${brightness})`;document.getElementById("glow").style.background=lights?`radial-gradient(circle,${color}66,transparent 58%)`:"none";if(effect==="rainbow")document.getElementById("scene").style.background=`linear-gradient(120deg,hsl(${(t*.04)%360} 90% 15%),hsl(${(t*.04+120)%360} 90% 15%),hsl(${(t*.04+240)%360} 90% 15%))`;else document.getElementById("scene").style.background="#000";background(t,p);fx.clearRect(0,0,innerWidth,innerHeight);fx.beginPath();for(let x=0;x<=innerWidth;x+=8){let y=innerHeight*.86+Math.sin(x*.018+t*.002)*(8+p*90);x?fx.lineTo(x,y):fx.moveTo(x,y)}fx.strokeStyle="rgba(255,220,80,.5)";fx.lineWidth=2+p*5;fx.stroke();document.getElementById("glow").style.transform=`scale(${1+p*.12})`;picture.style.filter=`brightness(${1+p*.25})`;requestAnimationFrame(draw)}
 requestAnimationFrame(draw);
 setInterval(()=>document.getElementById("clock").textContent=new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"}),1000);
