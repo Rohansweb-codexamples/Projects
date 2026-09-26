@@ -1,162 +1,322 @@
+```html
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Rohans Web Viewer</title>
+<title>Rohans Web TV Viewer</title>
 
 <style>
+*{
+    box-sizing:border-box;
+}
+
 html,body{
-margin:0;
-width:100%;
-height:100%;
-overflow:hidden;
-background:black;
-font-family:Arial,sans-serif;
+    margin:0;
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    background:black;
+    font-family:Arial,sans-serif;
 }
 
-#bg{
-position:fixed;
-inset:0;
-background-size:cover;
-background-position:center;
-filter:blur(30px);
-transform:scale(1.2);
-opacity:.35;
+#background{
+    position:fixed;
+    inset:-20%;
+    background:
+        radial-gradient(circle at center,
+        #ffcc00,
+        #ff7a00,
+        #ff3300,
+        #000);
+    transform:scale(1);
+    transition:transform .15s linear;
+    filter:blur(40px);
 }
 
-.content{
-position:absolute;
-inset:0;
-display:flex;
-flex-direction:column;
-justify-content:center;
-align-items:center;
-color:white;
+#image{
+    position:absolute;
+    inset:0;
+    margin:auto;
+    max-width:90%;
+    max-height:85%;
+    object-fit:contain;
+    border-radius:25px;
+    box-shadow:
+        0 0 50px rgba(255,255,255,.2),
+        0 0 100px rgba(255,122,0,.3);
 }
 
-img{
-width:300px;
-height:300px;
-object-fit:cover;
-border-radius:30px;
-box-shadow:0 0 50px rgba(0,0,0,.5);
+#overlay{
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    background:
+        linear-gradient(
+            to top,
+            rgba(0,0,0,.35),
+            transparent 40%
+        );
 }
 
-h1{
-margin:20px 0;
-font-size:50px;
+#status{
+    position:absolute;
+    top:20px;
+    left:20px;
+    color:white;
+    background:rgba(0,0,0,.4);
+    padding:10px 15px;
+    border-radius:12px;
+    backdrop-filter:blur(10px);
+    font-size:14px;
 }
 
-#bars{
-position:absolute;
-bottom:0;
-left:0;
-right:0;
-height:40%;
-display:flex;
-align-items:flex-end;
-gap:3px;
-padding:0 10px;
+#waveCanvas{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    pointer-events:none;
 }
 
-.bar{
-flex:1;
-background:linear-gradient(
-to top,
-#ff6f00,
-#ffd54f
-);
-border-radius:5px 5px 0 0;
+#help{
+    position:absolute;
+    bottom:20px;
+    left:50%;
+    transform:translateX(-50%);
+    color:white;
+    background:rgba(0,0,0,.4);
+    padding:12px 18px;
+    border-radius:14px;
+    backdrop-filter:blur(10px);
 }
 </style>
 </head>
 <body>
 
-<div id="bg"></div>
+<div id="background"></div>
 
-<div class="content">
+<canvas id="waveCanvas"></canvas>
 
-<img id="cover"
-src="https://picsum.photos/500">
+<img id="image">
 
-<h1 id="title">
-Waiting For Controller...
-</h1>
+<div id="overlay"></div>
 
+<div id="status">
+Waiting for controller...
 </div>
 
-<div id="bars"></div>
+<div id="help">
+TV Remote: ▲▼ change size • ◀▶ rotate
+</div>
 
 <script>
-const channel=
-new BroadcastChannel(
-"rohans_display"
+
+const channel =
+    new BroadcastChannel(
+        "rohans_tv_display"
+    );
+
+const image =
+    document.getElementById(
+        "image"
+    );
+
+const background =
+    document.getElementById(
+        "background"
+    );
+
+const statusBox =
+    document.getElementById(
+        "status"
+    );
+
+const canvas =
+    document.getElementById(
+        "waveCanvas"
+    );
+
+const ctx =
+    canvas.getContext("2d");
+
+let audioLevel = 0;
+let scale = 1;
+let rotation = 0;
+
+function resizeCanvas(){
+
+    canvas.width =
+        window.innerWidth;
+
+    canvas.height =
+        window.innerHeight;
+
+}
+
+window.addEventListener(
+    "resize",
+    resizeCanvas
 );
 
-const barsContainer=
-document.getElementById(
-"bars"
-);
+resizeCanvas();
 
-const bars=[];
+channel.onmessage = e => {
 
-for(let i=0;i<48;i++){
+    const data = e.data;
 
-const div=
-document.createElement("div");
+    if(data.type === "image"){
 
-div.className="bar";
+        image.src =
+            data.image;
 
-div.style.height="20px";
+        statusBox.textContent =
+            "Image received";
 
-barsContainer.appendChild(div);
+    }
 
-bars.push(div);
+    if(data.type === "audio"){
 
-}
+        audioLevel =
+            data.level;
 
-channel.onmessage=e=>{
-
-const data=e.data;
-
-if(data.type==="info"){
-
-document.getElementById(
-"title"
-).textContent=
-data.title;
-
-document.getElementById(
-"cover"
-).src=
-data.artwork;
-
-document.getElementById(
-"bg"
-).style.backgroundImage=
-`url(${data.artwork})`;
-
-}
-
-if(data.type==="visualiser"){
-
-data.bars.forEach(
-(value,index)=>{
-
-if(bars[index]){
-
-bars[index].style.height=
-value+"px";
-
-}
-
-});
-
-}
+    }
 
 };
+
+function draw(){
+
+    requestAnimationFrame(
+        draw
+    );
+
+    const w = canvas.width;
+    const h = canvas.height;
+
+    ctx.clearRect(
+        0,
+        0,
+        w,
+        h
+    );
+
+    background.style.transform =
+        `scale(${1 + audioLevel/300})`;
+
+    image.style.transform =
+        `scale(${scale})
+         rotate(${rotation}deg)`;
+
+    ctx.lineWidth = 4;
+
+    const gradient =
+        ctx.createLinearGradient(
+            0,
+            h,
+            0,
+            0
+        );
+
+    gradient.addColorStop(
+        0,
+        "#ff7a00"
+    );
+
+    gradient.addColorStop(
+        1,
+        "#ffd54f"
+    );
+
+    ctx.strokeStyle =
+        gradient;
+
+    ctx.beginPath();
+
+    for(
+        let x=0;
+        x<w;
+        x+=8
+    ){
+
+        const y =
+            h*0.85 +
+            Math.sin(
+                x*0.02 +
+                Date.now()*0.004
+            ) *
+            (audioLevel*2);
+
+        if(x===0){
+
+            ctx.moveTo(
+                x,
+                y
+            );
+
+        }else{
+
+            ctx.lineTo(
+                x,
+                y
+            );
+
+        }
+
+    }
+
+    ctx.stroke();
+
+}
+
+draw();
+
+/* TV REMOTE / KEYBOARD */
+
+document.addEventListener(
+    "keydown",
+    e => {
+
+        if(
+            e.key === "ArrowUp"
+        ){
+
+            scale += 0.05;
+
+        }
+
+        if(
+            e.key === "ArrowDown"
+        ){
+
+            scale =
+                Math.max(
+                    0.3,
+                    scale - 0.05
+                );
+
+        }
+
+        if(
+            e.key === "ArrowLeft"
+        ){
+
+            rotation -= 5;
+
+        }
+
+        if(
+            e.key === "ArrowRight"
+        ){
+
+            rotation += 5;
+
+        }
+
+    }
+);
+
 </script>
 
 </body>
 </html>
+```
