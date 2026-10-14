@@ -9,7 +9,7 @@
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;font-family:Arial,sans-serif}body{cursor:none}
 #scene{position:fixed;inset:0;background:#000;overflow:hidden}
 canvas{position:absolute;inset:0;width:100%;height:100%}
-#discoBackdrop{position:absolute;inset:0;display:none;overflow:hidden;background:#080012}#discoBackdrop.show{display:block}#discoBackdrop .stage{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.42}#discoBackdrop .ball{position:absolute;top:3%;right:5%;width:min(28vw,360px);max-height:50%;object-fit:contain;filter:drop-shadow(0 0 35px #ff27dc);animation:discoSpin 18s linear infinite}@keyframes discoSpin{to{transform:rotate(360deg)}}
+#discoBackdrop{position:absolute;inset:0;display:none;overflow:hidden;background:#080012}#discoBackdrop.show{display:block}#discoBackdrop .stage{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.42}#discoBackdrop .ball{position:absolute;top:0;left:50%;right:auto;width:min(28vw,360px);max-height:50%;object-fit:contain;transform:translateX(-50%);filter:drop-shadow(0 0 35px #ff27dc);animation:discoSpin 18s linear infinite}@keyframes discoSpin{from{transform:translateX(-50%) rotate(0deg)}to{transform:translateX(-50%) rotate(360deg)}}
 #glow{position:absolute;inset:-20%;background:radial-gradient(circle,rgba(255,255,255,.1),transparent 55%);mix-blend-mode:screen}
 #picture{position:absolute;top:50%;left:50%;max-width:88%;max-height:82%;object-fit:contain;border-radius:24px;opacity:0;transform:translate(-50%,-50%);transition:opacity .35s;box-shadow:0 0 40px rgba(255,255,255,.2)}
 #status,#clock,#mode,#hint{position:absolute;color:#fff;background:rgba(0,0,0,.48);backdrop-filter:blur(10px);border-radius:13px;z-index:5}
