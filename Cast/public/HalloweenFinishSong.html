@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Halloween • Finish the Song</title>
+<style>
+:root{--orange:#ff7a18;--gold:#ffd166;--ink:#160d20;--panel:rgba(22,10,28,.88)}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;color:#fff;font-family:Inter,Arial,sans-serif;background:#10091a url("https://raw.githubusercontent.com/Rohansweb-codexamples/Projects/main/Cast/Create%20me%20a%20Halloween%20Finish%20the%20song%20backround.jpg.png") center/cover fixed no-repeat}
+body:before{content:"";position:fixed;inset:0;background:linear-gradient(120deg,rgba(15,5,22,.84),rgba(38,10,43,.55),rgba(7,6,17,.82));z-index:-1}
+header{display:flex;justify-content:space-between;align-items:center;padding:18px 4vw;gap:15px}.brand{font-weight:900;letter-spacing:2px;color:var(--gold);font-size:13px}.topbtn,button,select,input{font:inherit}.topbtn{background:#ffffff18;color:white;border:1px solid #ffffff40;padding:10px 15px;border-radius:12px;cursor:pointer}
+main{width:min(1100px,94vw);margin:10px auto 36px}.hero{text-align:center;margin:12px auto 24px}.eyebrow{color:var(--gold);font-size:12px;letter-spacing:4px;font-weight:900}.hero h1{font-size:clamp(38px,7vw,76px);line-height:.95;margin:10px 0;text-transform:uppercase;text-shadow:0 5px 25px #ff650088}.hero p{color:#f0dff2;margin:10px 0}
+.panel{background:var(--panel);border:1px solid #ffffff25;border-radius:22px;padding:22px;box-shadow:0 18px 60px #0008;backdrop-filter:blur(12px)}
+.setup{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap}.setup label{font-weight:800}.setup select{background:#28162f;color:white;border:1px solid #ffffff40;border-radius:10px;padding:12px}
+.teams{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0}.team{background:#ffffff12;border:2px solid #ffffff1c;border-radius:16px;padding:13px;text-align:center;transition:.2s}.team.active{border-color:var(--gold);background:#ff9d2422;box-shadow:0 0 25px #ff8a2540}.team-name{font-weight:900;font-size:16px}.score{font-size:38px;font-weight:1000;color:var(--gold);margin:2px}.team-controls{display:flex;justify-content:center;gap:8px}.team-controls button{width:34px;height:30px;border-radius:8px;border:0;background:#ffffff20;color:#fff;cursor:pointer}
+.game{margin-top:14px}.gamebar{display:flex;justify-content:space-between;align-items:center;color:#f5d8ff;font-weight:800;font-size:13px;gap:10px}.progress{height:7px;background:#ffffff20;border-radius:20px;overflow:hidden;margin:12px 0 22px}.progress span{display:block;height:100%;background:linear-gradient(90deg,#ff7518,#ffd166);width:0;transition:.3s}
+.turn{text-align:center;color:var(--gold);font-weight:900;letter-spacing:1px;font-size:13px}.prompt{font-size:clamp(23px,4vw,38px);font-weight:900;text-align:center;line-height:1.25;margin:18px auto 24px;max-width:780px}.blank{color:var(--gold);text-shadow:0 0 20px #ff8c28}
+.answers{display:grid;grid-template-columns:1fr 1fr;gap:12px}.answer{padding:17px;border-radius:14px;border:1px solid #ffffff38;background:#ffffff12;color:white;text-align:left;font-weight:800;cursor:pointer;min-height:66px;transition:.15s}.answer:hover:not(:disabled){background:#ff8a2533;border-color:var(--orange);transform:translateY(-2px)}.answer:disabled{cursor:default;opacity:.9}.answer.correct{border-color:#5ee6a0;background:#1d754c66}.answer.wrong{border-color:#ff6262;background:#8c252566}
+.feedback{text-align:center;min-height:28px;margin:16px 0 4px;font-weight:900}.actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:12px}.primary{background:linear-gradient(110deg,#ff7417,#ffb52e);color:#241021;border:0;border-radius:12px;padding:13px 22px;font-weight:1000;cursor:pointer;box-shadow:0 8px 24px #ff751744}.secondary{background:#ffffff18;color:white;border:1px solid #ffffff35;border-radius:12px;padding:12px 18px;font-weight:800;cursor:pointer}.primary:disabled{opacity:.4;cursor:not-allowed}
+.rules{text-align:center;color:#e6d4eb;font-size:12px;margin:15px 0 0}.hidden{display:none!important}
+@media(max-width:620px){header{padding:14px 3vw}.teams{gap:7px}.team{padding:10px 4px}.team-name{font-size:12px}.score{font-size:30px}.answers{grid-template-columns:1fr}.panel{padding:15px}.hero{margin-top:5px}}
+</style></head>
+<body>
+<header><div class="brand">ROHANS WEB • HALLOWEEN SPECIAL</div><button class="topbtn" id="resetTop">↻ Reset game</button></header>
+<main>
+<section class="hero"><div class="eyebrow">THE SPOOKY MUSIC CHALLENGE</div><h1>Finish the Song</h1><p>Listen to the line in your head… then choose how it ends!</p></section>
+<section class="panel">
+<div class="setup"><label for="sideCount">How many sides?</label><select id="sideCount"><option value="1">1 side</option><option value="2" selected>2 sides</option><option value="3">3 sides</option></select><button class="secondary" id="startBtn">Start / Restart</button></div>
+<div class="teams" id="teams"></div>
+<div class="game">
+<div class="gamebar"><span id="roundLabel">ROUND 1 / 12</span><span id="pointsLabel">1 point per answer</span></div><div class="progress"><span id="progress"></span></div>
+<div class="turn" id="turnLabel">SIDE 1'S TURN</div>
+<div class="prompt" id="prompt">Ready to play?</div>
+<div class="answers" id="answers"></div>
+<div class="feedback" id="feedback">Press Start / Restart to begin the Halloween challenge.</div>
+<div class="actions"><button class="primary" id="nextBtn" disabled>Next song line →</button><button class="secondary" id="skipBtn">Skip line</button></div>
+<p class="rules">Take turns choosing the ending. Correct answer = 1 point. Highest score wins!</p>
+</div></section>
+</main>
+<script>
+const songs=[
+{a:"On a dark and stormy night, the pumpkins start to",o:["glow","swim","sing opera","take flight"],c:0},
+{a:"The skeleton danced all night, rattling every",o:["bone","window","teacup","rainbow"],c:0},
+{a:"The witch flew past the moon on her old wooden",o:["broom","canoe","train","spoon"],c:0},
+{a:"A little ghost came out to play, then floated",o:["away","to the bay","down the lane","into a pie"],c:0},
+{a:"The black cat crept across the floor, then scratched upon the",o:["door","ceiling","cloud","shore"],c:0},
+{a:"When midnight strikes, the monsters cheer and shout, it's time to",o:["come out","go to school","make some tea","head south"],c:0},
+{a:"The haunted house has secrets in the",o:["night","light","rain","sand"],c:0},
+{a:"A vampire packed a lunch to eat, a spooky little",o:["treat","seat","street","beat"],c:0},
+{a:"The spider spun a silvery thread, right above the monster's",o:["bed","bread","sled","headphones"],c:0},
+{a:"The moon is bright, the stars are high, the owls are singing",o:["in the sky","in a pie","by the sea","on a train"],c:0},
+{a:"We hear a howl, we hear a scream, we're dancing in a",o:["Halloween dream","ice cream","football team","washing machine"],c:0},
+{a:"The trick-or-treaters shout hooray, with bags of sweets to end the",o:["day","play","way","grey"],c:0}
+];
+let sides=2,scores=[0,0,0],names=["Side 1","Side 2","Side 3"],round=0,turn=0,answered=false,order=[];
+const $=id=>document.getElementById(id);
+function shuffle(){order=[...songs.keys()];for(let i=order.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[order[i],order[j]]=[order[j],order[i]]}}
+function renderTeams(){const el=$("teams");el.innerHTML="";for(let i=0;i<sides;i++){const card=document.createElement("div");card.className="team"+(i===turn?" active":"");card.innerHTML='<div class="team-name">'+names[i]+'</div><div class="score">'+scores[i]+'</div><div class="team-controls"><button aria-label="Remove point">−</button><button aria-label="Add point">+</button></div>';card.querySelectorAll("button")[0].onclick=()=>{scores[i]=Math.max(0,scores[i]-1);renderTeams()};card.querySelectorAll("button")[1].onclick=()=>{scores[i]++;renderTeams()};el.appendChild(card)}}
+function begin(){sides=Number($("sideCount").value);scores=[0,0,0];round=0;turn=0;shuffle();renderTeams();showSong()}
+function showSong(){answered=false;$("feedback").textContent="Choose the correct ending to score a point.";$("nextBtn").disabled=true;$("roundLabel").textContent="ROUND "+(round+1)+" / "+songs.length;$("progress").style.width=(round/songs.length*100)+"%";$("turnLabel").textContent=names[turn].toUpperCase()+"'S TURN";const s=songs[order[round]];$("prompt").innerHTML=s.a+' <span class="blank">…?</span>';$("answers").innerHTML="";s.o.forEach((v,i)=>{const b=document.createElement("button");b.className="answer";b.textContent=String.fromCharCode(65+i)+".  "+v;b.onclick=()=>choose(i);$("answers").appendChild(b)});renderTeams()}
+function choose(i){if(answered)return;answered=true;const s=songs[order[round]],buttons=[...$("answers").children];buttons.forEach((b,n)=>{b.disabled=true;if(n===s.c)b.classList.add("correct");if(n===i&&i!==s.c)b.classList.add("wrong")});if(i===s.c){scores[turn]++;$("feedback").textContent="That's right! +1 point for "+names[turn]+"!";$("feedback").style.color="#79f2ad"}else{$("feedback").textContent="Not quite! The answer was: "+s.o[s.c];$("feedback").style.color="#ffd166"}$("nextBtn").disabled=false;renderTeams()}
+function next(){if(!answered)return;round++;if(round>=songs.length){finish();return}turn=(turn+1)%sides;showSong()}
+function finish(){ $("roundLabel").textContent="FINAL SCORES";$("progress").style.width="100%";$("turnLabel").textContent="THE HALLOWEEN CHALLENGE IS COMPLETE";$("prompt").textContent="The spooky songs are finished!";$("answers").innerHTML="";const high=Math.max(...scores.slice(0,sides));const winners=names.slice(0,sides).filter((n,i)=>scores[i]===high);$("feedback").textContent=(winners.length>1?"It's a tie! ":"Winner: ")+winners.join(" & ")+" — "+high+" points!";$("feedback").style.color="#ffd166";$("nextBtn").disabled=true;$("nextBtn").textContent="Game complete";$("skipBtn").textContent="Play again";renderTeams()}
+$("startBtn").onclick=begin;$("nextBtn").onclick=next;$("skipBtn").onclick=()=>{if(round>=songs.length){begin();return}if(!answered){answered=true;$("feedback").textContent="Skipped! The answer was: "+songs[order[round]].o[songs[order[round]].c];$("nextBtn").disabled=false;$("answers").querySelectorAll("button").forEach(b=>b.disabled=true)}next()};$("resetTop").onclick=begin;$("sideCount").onchange=()=>{sides=Number($("sideCount").value);scores=[0,0,0];turn=0;renderTeams()};renderTeams();
+</script></body></html>
