@@ -128,7 +128,8 @@ let currentState = {
     timerElapsed: 0,
     halloweenActive: false,
     halloweenScores: [0,0,0],
-    halloweenSides: 2
+    halloweenSides: 2,
+    halloweenNames: ["Side 1","Side 2","Side 3"]
 };
 
 let controllers = 0;
@@ -205,7 +206,7 @@ io.on("connection", (socket) => {
 
     socket.on("display-settings", (data) => {
         if (socket.role !== "controller" || !data || typeof data !== "object") return;
-        const allowed = ["mode","auto","speed","intensity","brightness","color","effect","audioReactive","lights","message","messageVisible","announcement","announcementVisible","screensaver","timerMode","timerRunning","timerDuration","timerStartedAt","timerElapsed","halloweenActive","halloweenScores","halloweenSides"];
+        const allowed = ["mode","auto","speed","intensity","brightness","color","effect","audioReactive","lights","message","messageVisible","announcement","announcementVisible","screensaver","timerMode","timerRunning","timerDuration","timerStartedAt","timerElapsed","halloweenActive","halloweenScores","halloweenSides","halloweenNames"];
         for (const key of allowed) {
             if (Object.prototype.hasOwnProperty.call(data,key)) currentState[key]=data[key];
         }
