@@ -20,7 +20,7 @@ main{width:min(1100px,94vw);margin:10px auto 36px}.hero{text-align:center;margin
 @media(max-width:620px){header{padding:14px 3vw}.teams{gap:7px}.team{padding:10px 4px}.team-name{font-size:12px}.score{font-size:30px}.answers{grid-template-columns:1fr}.panel{padding:15px}.hero{margin-top:5px}}
 </style></head>
 <body>
-<header><div class="brand">ROHANS WEB • HALLOWEEN SPECIAL</div><button class="topbtn" id="resetTop">↻ Reset game</button></header>
+<header><div class="brand">ROHANS WEB • HALLOWEEN SPECIAL</div><div style="display:flex;gap:8px"><button class="topbtn" id="stopScore">Stop TV scoreboard</button><button class="topbtn" id="resetTop">↻ Reset game</button></div></header>
 <main>
 <section class="hero"><div class="eyebrow">THE SPOOKY MUSIC CHALLENGE</div><h1>Finish the Song</h1><p>Listen to the line in your head… then choose how it ends!</p></section>
 <section class="panel">
@@ -33,9 +33,10 @@ main{width:min(1100px,94vw);margin:10px auto 36px}.hero{text-align:center;margin
 <div class="answers" id="answers"></div>
 <div class="feedback" id="feedback">Press Start / Restart to begin the Halloween challenge.</div>
 <div class="actions"><button class="primary" id="nextBtn" disabled>Next song line →</button><button class="secondary" id="skipBtn">Skip line</button></div>
-<p class="rules">Take turns choosing the ending. Correct answer = 1 point. Highest score wins!</p>
+<p class="rules">Play Halloween music from your own device. The game does not play music. Correct answer = 1 point.</p>
 </div></section>
 </main>
+<script src="/socket.io/socket.io.js"></script>
 <script>
 const songs=[
 {a:"On a dark and stormy night, the pumpkins start to",o:["glow","swim","sing opera","take flight"],c:0},
@@ -51,14 +52,14 @@ const songs=[
 {a:"We hear a howl, we hear a scream, we're dancing in a",o:["Halloween dream","ice cream","football team","washing machine"],c:0},
 {a:"The trick-or-treaters shout hooray, with bags of sweets to end the",o:["day","play","way","grey"],c:0}
 ];
-let sides=2,scores=[0,0,0],names=["Side 1","Side 2","Side 3"],round=0,turn=0,answered=false,order=[];
+let sides=2,scores=[0,0,0],names=["Side 1","Side 2","Side 3"],round=0,turn=0,answered=false,order=[],gameStarted=false;const socket=io({transports:["websocket","polling"]});socket.on("connect",()=>socket.emit("identify","controller"));function publishScores(active=gameStarted){if(socket.connected)socket.emit("display-settings",{halloweenActive:active,halloweenScores:scores,halloweenSides:sides});}
 const $=id=>document.getElementById(id);
 function shuffle(){order=[...songs.keys()];for(let i=order.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[order[i],order[j]]=[order[j],order[i]]}}
-function renderTeams(){const el=$("teams");el.innerHTML="";for(let i=0;i<sides;i++){const card=document.createElement("div");card.className="team"+(i===turn?" active":"");card.innerHTML='<div class="team-name">'+names[i]+'</div><div class="score">'+scores[i]+'</div><div class="team-controls"><button aria-label="Remove point">−</button><button aria-label="Add point">+</button></div>';card.querySelectorAll("button")[0].onclick=()=>{scores[i]=Math.max(0,scores[i]-1);renderTeams()};card.querySelectorAll("button")[1].onclick=()=>{scores[i]++;renderTeams()};el.appendChild(card)}}
-function begin(){sides=Number($("sideCount").value);scores=[0,0,0];round=0;turn=0;shuffle();renderTeams();showSong()}
+function renderTeams(){const el=$("teams");el.innerHTML="";for(let i=0;i<sides;i++){const card=document.createElement("div");card.className="team"+(i===turn?" active":"");card.innerHTML='<div class="team-name">'+names[i]+'</div><div class="score">'+scores[i]+'</div><div class="team-controls"><button aria-label="Remove point">−</button><button aria-label="Add point">+</button></div>';card.querySelectorAll("button")[0].onclick=()=>{scores[i]=Math.max(0,scores[i]-1);renderTeams()};card.querySelectorAll("button")[1].onclick=()=>{scores[i]++;renderTeams()};el.appendChild(card)}if(gameStarted)publishScores(true)}
+function begin(){sides=Number($("sideCount").value);scores=[0,0,0];round=0;turn=0;gameStarted=true;shuffle();renderTeams();publishScores(true);showSong()}
 function showSong(){answered=false;$("feedback").textContent="Choose the correct ending to score a point.";$("nextBtn").disabled=true;$("roundLabel").textContent="ROUND "+(round+1)+" / "+songs.length;$("progress").style.width=(round/songs.length*100)+"%";$("turnLabel").textContent=names[turn].toUpperCase()+"'S TURN";const s=songs[order[round]];$("prompt").innerHTML=s.a+' <span class="blank">…?</span>';$("answers").innerHTML="";s.o.forEach((v,i)=>{const b=document.createElement("button");b.className="answer";b.textContent=String.fromCharCode(65+i)+".  "+v;b.onclick=()=>choose(i);$("answers").appendChild(b)});renderTeams()}
 function choose(i){if(answered)return;answered=true;const s=songs[order[round]],buttons=[...$("answers").children];buttons.forEach((b,n)=>{b.disabled=true;if(n===s.c)b.classList.add("correct");if(n===i&&i!==s.c)b.classList.add("wrong")});if(i===s.c){scores[turn]++;$("feedback").textContent="That's right! +1 point for "+names[turn]+"!";$("feedback").style.color="#79f2ad"}else{$("feedback").textContent="Not quite! The answer was: "+s.o[s.c];$("feedback").style.color="#ffd166"}$("nextBtn").disabled=false;renderTeams()}
 function next(){if(!answered)return;round++;if(round>=songs.length){finish();return}turn=(turn+1)%sides;showSong()}
-function finish(){ $("roundLabel").textContent="FINAL SCORES";$("progress").style.width="100%";$("turnLabel").textContent="THE HALLOWEEN CHALLENGE IS COMPLETE";$("prompt").textContent="The spooky songs are finished!";$("answers").innerHTML="";const high=Math.max(...scores.slice(0,sides));const winners=names.slice(0,sides).filter((n,i)=>scores[i]===high);$("feedback").textContent=(winners.length>1?"It's a tie! ":"Winner: ")+winners.join(" & ")+" — "+high+" points!";$("feedback").style.color="#ffd166";$("nextBtn").disabled=true;$("nextBtn").textContent="Game complete";$("skipBtn").textContent="Play again";renderTeams()}
-$("startBtn").onclick=begin;$("nextBtn").onclick=next;$("skipBtn").onclick=()=>{if(round>=songs.length){begin();return}if(!answered){answered=true;$("feedback").textContent="Skipped! The answer was: "+songs[order[round]].o[songs[order[round]].c];$("nextBtn").disabled=false;$("answers").querySelectorAll("button").forEach(b=>b.disabled=true)}next()};$("resetTop").onclick=begin;$("sideCount").onchange=()=>{sides=Number($("sideCount").value);scores=[0,0,0];turn=0;renderTeams()};renderTeams();
+function finish(){ $("roundLabel").textContent="FINAL SCORES";$("progress").style.width="100%";$("turnLabel").textContent="THE HALLOWEEN CHALLENGE IS COMPLETE";$("prompt").textContent="The spooky songs are finished!";$("answers").innerHTML="";const high=Math.max(...scores.slice(0,sides));const winners=names.slice(0,sides).filter((n,i)=>scores[i]===high);$("feedback").textContent=(winners.length>1?"It's a tie! ":"Winner: ")+winners.join(" & ")+" — "+high+" points!";$("feedback").style.color="#ffd166";$("nextBtn").disabled=true;$("nextBtn").textContent="Game complete";$("skipBtn").textContent="Play again";renderTeams();publishScores(true)}
+$("startBtn").onclick=begin;$("nextBtn").onclick=next;$("skipBtn").onclick=()=>{if(round>=songs.length){begin();return}if(!answered){answered=true;$("feedback").textContent="Skipped! The answer was: "+songs[order[round]].o[songs[order[round]].c];$("nextBtn").disabled=false;$("answers").querySelectorAll("button").forEach(b=>b.disabled=true)}next()};$("resetTop").onclick=begin;$("stopScore").onclick=()=>{gameStarted=false;publishScores(false);$("feedback").textContent="TV scoreboard hidden. Start the game to show it again."};$("sideCount").onchange=()=>{sides=Number($("sideCount").value);scores=[0,0,0];turn=0;renderTeams();if(gameStarted)publishScores(true)};renderTeams();
 </script></body></html>
