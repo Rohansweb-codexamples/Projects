@@ -81,7 +81,7 @@ $("addMedia").onclick=async()=>{const files=[...$("mediaFiles").files];if(!files
 $("playQueue").onclick=()=>{if(!mediaQueue.length){$("mediaStatus").textContent="Add media to the queue first.";return}publishQueue();$("mediaStatus").textContent="Playing queue on the TV."};
 $("clearQueue").onclick=()=>{mediaQueue=[];state.mediaQueue=[];state.mediaPlaying=false;state.image=null;send();renderMediaQueue()};
 $("repeatQueue").onchange=publishQueue;$("imageDuration").onchange=publishQueue;
-$("clear").onclick=()=>socket.emit("reset-display");renderMediaQueue();$("reset").onclick=()=>socket.emit("reset-display");$("full").onclick=()=>socket.emit("display-settings",{fullscreen:true});$("save").onclick=()=>{localStorage.setItem("rwTVPreset",JSON.stringify(state));$("save").textContent="Saved"};
+renderMediaQueue();$("reset").onclick=()=>socket.emit("reset-display");$("full").onclick=()=>socket.emit("display-settings",{fullscreen:true});$("save").onclick=()=>{localStorage.setItem("rwTVPreset",JSON.stringify(state));$("save").textContent="Saved"};
 $("discoTheme").onchange=e=>{state.discoTheme=e.target.value;state.discoColor="";send()};
 $("discoBrightness").oninput=e=>{$("discoBrightnessLabel").textContent=e.target.value+"%";state.discoBrightness=Number(e.target.value)/100;send()};
 $("discoSpeed").oninput=e=>{$("discoSpeedLabel").textContent=e.target.value+"%";state.discoSpeed=Number(e.target.value)/100;send()};
