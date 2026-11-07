@@ -147,6 +147,7 @@ io.on("connection", (socket) => {
             socket.role = "controller";
             controllers++;
             console.log("Controller connected:", socket.id);
+            socket.emit("bingo-state", currentState);
         } else if (role === "viewer") {
             socket.role = "viewer";
             viewers++;
