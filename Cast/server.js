@@ -56,6 +56,8 @@ app.get("/index.html", (req, res) => {
     res.sendFile(path.join(PUBLIC_DIR, "index.html"));
 });
 
+app.get("/bingo-win.mp3", (req, res) => res.sendFile(path.join(ROOT_DIR, "screenrecorder-20260511-16102_Tech_House_RMX_02.mp3")));
+
 app.get("/viewer", (req, res) => {
     res.sendFile(path.join(PUBLIC_DIR, "viewer.html"));
 });
@@ -130,7 +132,7 @@ let currentState = {
     halloweenScores: [0,0,0],
     halloweenSides: 2,
     halloweenNames: ["Side 1","Side 2","Side 3"],
-    bingoActive: false, bingoNumber: 0, bingoCalled: [], bingoWinner: "", bingoLastCall: 0
+    bingoActive: false, bingoNumber: 0, bingoCalled: [], bingoWinner: "", bingoWinnerType: "", bingoRound: 1, bingoLastCall: 0
 };
 
 let controllers = 0;
@@ -209,7 +211,7 @@ io.on("connection", (socket) => {
 
     socket.on("display-settings", (data) => {
         if (socket.role !== "controller" || !data || typeof data !== "object") return;
-        const allowed = ["mode","auto","speed","intensity","brightness","color","effect","audioReactive","lights","message","messageVisible","announcement","announcementVisible","screensaver","timerMode","timerRunning","timerDuration","timerStartedAt","timerElapsed","halloweenActive","halloweenScores","halloweenSides","halloweenNames","bingoActive","bingoNumber","bingoCalled","bingoWinner","bingoLastCall"];
+        const allowed = ["mode","auto","speed","intensity","brightness","color","effect","audioReactive","lights","message","messageVisible","announcement","announcementVisible","screensaver","timerMode","timerRunning","timerDuration","timerStartedAt","timerElapsed","halloweenActive","halloweenScores","halloweenSides","halloweenNames","bingoActive","bingoNumber","bingoCalled","bingoWinner","bingoWinnerType","bingoRound","bingoLastCall"];
         for (const key of allowed) {
             if (Object.prototype.hasOwnProperty.call(data,key)) currentState[key]=data[key];
         }
@@ -217,10 +219,24 @@ io.on("connection", (socket) => {
     });
 
     socket.on("bingo-claim", (data) => {
-        if (socket.role !== "player") return;
+        if (socket.role !== "player" || currentState.bingoWinner) return;
         const name = String(data && data.name || "A player").trim().slice(0,32) || "A player";
+        const card = data && data.card;
+        const marked = new Set((data && Array.isArray(data.marked) ? data.marked : []).map(String));
+        const called = new Set(Array.isArray(currentState.bingoCalled) ? currentState.bingoCalled.map(Number) : []);
+        if (!Array.isArray(card) || card.length !== 5 || card.some(col => !Array.isArray(col) || col.length !== 5)) return;
+        const isMarked = n => n === "FREE" || (marked.has(String(n)) && called.has(Number(n)));
+        let valid = false, type = currentState.bingoRound === 2 ? "One Row" : "Full House";
+        if (currentState.bingoRound === 2) {
+            for (let row=0; row<5; row++) if (card.every(col => isMarked(col[row]))) valid = true;
+        } else {
+            valid = card.every(col => col.every(isMarked));
+        }
+        if (!valid) { socket.emit("bingo-claim-rejected", { message: "Your card does not yet have the winning pattern for this round." }); return; }
         currentState.bingoWinner = name;
-        io.emit("bingo-winner", { name });
+        currentState.bingoWinnerType = type;
+        io.emit("bingo-winner", { name, type, round: currentState.bingoRound });
+        io.emit("display-settings", currentState);
     });
 
     socket.on("animation-mode", (data) => {
@@ -272,6 +288,8 @@ io.on("connection", (socket) => {
             bingoNumber: 0,
             bingoCalled: [],
             bingoWinner: "",
+            bingoWinnerType: "",
+            bingoRound: 1,
             bingoLastCall: 0
         };
 
