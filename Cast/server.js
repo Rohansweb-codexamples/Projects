@@ -129,7 +129,8 @@ let currentState = {
     halloweenActive: false,
     halloweenScores: [0,0,0],
     halloweenSides: 2,
-    halloweenNames: ["Side 1","Side 2","Side 3"]
+    halloweenNames: ["Side 1","Side 2","Side 3"],
+    bingoActive: false, bingoNumber: 0, bingoCalled: [], bingoWinner: "", bingoLastCall: 0
 };
 
 let controllers = 0;
@@ -141,7 +142,8 @@ io.on("connection", (socket) => {
     socket.on("identify", (role) => {
         if (socket.role) return;
 
-        if (role === "controller") {
+        if (role === "player") { socket.role = "player"; socket.emit("bingo-state", currentState); }
+        else if (role === "controller") {
             socket.role = "controller";
             controllers++;
             console.log("Controller connected:", socket.id);
@@ -206,11 +208,18 @@ io.on("connection", (socket) => {
 
     socket.on("display-settings", (data) => {
         if (socket.role !== "controller" || !data || typeof data !== "object") return;
-        const allowed = ["mode","auto","speed","intensity","brightness","color","effect","audioReactive","lights","message","messageVisible","announcement","announcementVisible","screensaver","timerMode","timerRunning","timerDuration","timerStartedAt","timerElapsed","halloweenActive","halloweenScores","halloweenSides","halloweenNames"];
+        const allowed = ["mode","auto","speed","intensity","brightness","color","effect","audioReactive","lights","message","messageVisible","announcement","announcementVisible","screensaver","timerMode","timerRunning","timerDuration","timerStartedAt","timerElapsed","halloweenActive","halloweenScores","halloweenSides","halloweenNames","bingoActive","bingoNumber","bingoCalled","bingoWinner","bingoLastCall"];
         for (const key of allowed) {
             if (Object.prototype.hasOwnProperty.call(data,key)) currentState[key]=data[key];
         }
         io.emit("display-settings", currentState);
+    });
+
+    socket.on("bingo-claim", (data) => {
+        if (socket.role !== "player") return;
+        const name = String(data && data.name || "A player").trim().slice(0,32) || "A player";
+        currentState.bingoWinner = name;
+        io.emit("bingo-winner", { name });
     });
 
     socket.on("animation-mode", (data) => {
