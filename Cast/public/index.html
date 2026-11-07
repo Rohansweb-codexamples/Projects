@@ -8,7 +8,7 @@
 @keyframes bg{0%{background-position:0 50%}50%{background-position:100% 50%}100%{background-position:0 50%}}
 .app{height:calc(100vh - 20px);max-width:1500px;margin:auto;background:#ffffffeb;border:1px solid #fff8;border-radius:24px;box-shadow:0 18px 60px #0005;display:grid;grid-template-rows:auto auto 1fr auto;overflow:hidden}
 header{padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px}.brand{font-size:23px;font-weight:950}.sub{font-size:12px;opacity:.6}.status{display:flex;gap:7px}.pill{padding:8px 11px;border-radius:999px;background:#eee;font-size:12px;font-weight:800}.ok{background:#b9ffc8}
-nav{display:flex;gap:7px;padding:0 12px 10px;overflow:hidden}.tab{flex:1;min-width:0;border:0;border-radius:12px;padding:10px;background:#eee;font-weight:900;cursor:pointer}.tab.active{background:linear-gradient(135deg,#ff9800,#ff1744);color:#fff}
+nav{display:flex;gap:7px;padding:0 12px 10px;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin}.tab{flex:0 0 auto;min-width:88px;border:0;border-radius:12px;padding:10px;background:#eee;font-weight:900;cursor:pointer}.tab.active{background:linear-gradient(135deg,#ff9800,#ff1744);color:#fff}
 main{min-height:0;overflow:hidden;padding:10px 12px}.page{height:100%;display:none;min-height:0;overflow:auto}.page.active{display:block}.page.display.active{display:grid}.page.two.active{display:grid}.display{grid-template-columns:minmax(0,1.4fr) minmax(260px,1fr) minmax(260px,1fr);grid-template-rows:minmax(0,1fr) minmax(0,1fr);gap:10px}.card{min-width:0;min-height:0;background:#f3f4f7;border-radius:18px;padding:12px;overflow:hidden}.card h2{font-size:14px;margin:0 0 9px}.preview{height:100%;min-height:180px;background:#02020a;border-radius:14px;position:relative;overflow:hidden}.preview:after{content:"LIVE";position:absolute;top:8px;right:8px;background:#f22;color:white;border-radius:8px;padding:4px 7px;font-size:10px;font-weight:900}.preview canvas{width:100%;height:100%}.preview img{position:absolute;max-width:82%;max-height:80%;left:50%;top:50%;transform:translate(-50%,-50%);border-radius:12px}
 .big{grid-row:1/3}.controls{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}.btn{border:0;border-radius:11px;padding:9px 6px;background:#181818;color:white;font-weight:800;font-size:11px;cursor:pointer}.btn.active{background:linear-gradient(135deg,#ff9800,#e91e63)}.btn.alt{background:#fff;color:#111;border:1px solid #ddd}.btn.danger{background:#d50000}.widebtn{grid-column:1/-1}.slider{margin:8px 0}.slider label{display:flex;justify-content:space-between;font-size:11px;font-weight:900;margin-bottom:4px}.slider input{width:100%;accent-color:#ff6d00}.toggle{display:flex;align-items:center;justify-content:space-between;background:#fff;padding:8px;border-radius:10px;margin:5px 0;font-size:11px;font-weight:800}.toggle input{width:19px;height:19px}.colors{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}.swatch{height:30px;border:0;border-radius:9px;cursor:pointer}.file{width:100%;font-size:11px}.footer{padding:7px 12px;font-size:10px;opacity:.55;text-align:center}
 .palette{display:grid;grid-template-columns:repeat(8,1fr);gap:7px}.palette button{height:42px;border:0;border-radius:12px;cursor:pointer;font-weight:900;color:white;text-shadow:0 1px 3px #000}.two{display:grid;grid-template-columns:1fr 1fr;gap:9px}.full{grid-column:1/-1}
@@ -18,7 +18,7 @@ main{min-height:0;overflow:hidden;padding:10px 12px}.page{height:100%;display:no
 </style></head>
 <body><div class="app">
 <header><div><div class="brand">Rohans Web TV Control Centre</div><div class="sub">Interactive tablet controller</div></div><div class="status"><span class="pill" id="connection">Connecting</span><span class="pill" id="tv">TV Offline</span></div></header>
-<nav><button class="tab active" data-page="display">Control</button><button class="tab" data-page="lights">Lights</button><button class="tab" data-page="colour">Colours</button><button class="tab" data-page="picture">Picture</button><button class="tab" data-page="presets">Scenes</button><button class="tab" data-page="messages">Messages</button><button class="tab" data-page="timer">Timer</button><button class="tab" data-page="disco">Disco</button><button class="tab" data-page="admin">Admin</button><a class="tab" href="/bingo.html" target="_blank" style="text-align:center;text-decoration:none;color:#111">Bingo Card</a><a class="tab" href="/bingo-admin.html" target="_blank" style="text-align:center;text-decoration:none;color:#111">Bingo Admin</a><a class="tab" href="/bingo-viewer.html" target="_blank" style="text-align:center;text-decoration:none;color:#111">Bingo TV</a></nav>
+<nav><button class="tab active" data-page="display">Control</button><button class="tab" data-page="lights">Lights</button><button class="tab" data-page="colour">Colours</button><button class="tab" data-page="picture">Picture</button><button class="tab" data-page="presets">Scenes</button><button class="tab" data-page="messages">Messages</button><button class="tab" data-page="timer">Timer</button><button class="tab" data-page="disco">Disco</button><button class="tab" data-page="admin">Admin</button><button class="tab" data-page="bingo">Bingo</button></nav>
 <main>
 <section id="display" class="page display active">
 <div class="card big"><h2>Live TV Preview</h2><div class="preview"><canvas id="cv"></canvas><img id="pic"></div></div>
@@ -44,6 +44,17 @@ main{min-height:0;overflow:hidden;padding:10px 12px}.page{height:100%;display:no
 <p style="font-size:11px;opacity:.7">Control the moving beams on the TV light truss. Auto cycle changes the lighting look every few seconds.</p>
 <h2 style="margin-top:16px">Disco Soundtrack</h2><audio id="discoAudio" controls loop preload="none" src="https://home.rohansweb.co.uk/InteractiveSites/disco/mD3rE1JbQm3h5Z4TX4BpV.mp3" style="width:100%"></audio><p style="font-size:11px;opacity:.7">Start the music manually. Audio plays on the controller device; the TV shows the disco visuals.</p></div></section>
 <section id="admin" class="page"><div class="card"><h2>Administration</h2><div class="two"><button class="btn" onclick="location.href='/admin.html'">Open Admin Centre</button><button class="btn" id="save">Save Current Scene</button></div><p style="font-size:12px;opacity:.65">Use the separate Admin Centre for device status, connections, diagnostics and server controls.</p></div></section>
+<section id="bingo" class="page" style="height:100%;min-height:0;overflow:hidden">
+<div class="card" style="height:100%;display:flex;flex-direction:column;gap:10px;padding:12px">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+<div><h2 style="font-size:20px;margin:0 0 4px">Rohans Web Bingo</h2><p style="font-size:12px;margin:0;opacity:.65">Play a virtual 75-ball bingo game with live number calls.</p></div>
+<div style="display:flex;gap:8px;flex-wrap:wrap">
+<a href="/bingo-admin.html" target="_blank" rel="noopener" class="btn" style="text-decoration:none;display:inline-flex;align-items:center">Bingo Admin</a>
+<a href="/bingo-viewer.html" target="_blank" rel="noopener" class="btn alt" style="text-decoration:none;display:inline-flex;align-items:center">Bingo TV Viewer</a>
+</div></div>
+<iframe title="Virtual Bingo Card" src="/bingo.html" style="width:100%;height:100%;flex:1;min-height:0;border:0;border-radius:14px;background:#160d25"></iframe>
+</div>
+</section>
 </main><div class="footer">Rohans Web TV • All controls update the connected display</div></div>
 <script src="/socket.io/socket.io.js"></script>
 <script>
@@ -92,7 +103,7 @@ function showPage(id){
   }
   if(tab) tab.classList.add("active");
 }
-document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",e=>{
+document.querySelectorAll("button.tab[data-page]").forEach(t=>t.addEventListener("click",e=>{
   e.preventDefault();
   e.stopPropagation();
   showPage(t.dataset.page);
