@@ -1,10 +1,14 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Bingo TV Viewer</title><style>
-*{box-sizing:border-box}body{margin:0;min-height:100vh;overflow:hidden;background:radial-gradient(ellipse at 50% 35%,#552477,#160b29 70%);font-family:Arial,sans-serif;color:white;display:grid;place-items:center;text-align:center}.wrap{width:100%;padding:3vw}.brand{color:#ffc45b;font-weight:bold;letter-spacing:6px;font-size:clamp(14px,2vw,24px)}h1{font-size:clamp(48px,9vw,110px);margin:10px 0;color:#ff9a2e;text-shadow:0 0 35px #ff6b1c}.number{font-size:clamp(150px,34vw,390px);font-weight:1000;line-height:.95;color:#fff0bd;text-shadow:0 0 35px #ff9c34,0 0 90px #ff4fba}.letter{font-size:clamp(30px,5vw,65px);font-weight:bold;color:#dcb8ff}.stage{font-size:clamp(18px,3vw,34px);font-weight:900;color:#ffce68;margin-top:12px}.called{margin:18px auto 0;max-width:1100px;color:#d8c5eb;font-size:clamp(13px,1.7vw,20px);line-height:1.7}.winner{display:none;position:fixed;inset:0;background:radial-gradient(circle,#7a2999,#1b092e 75%);place-items:center;z-index:5;padding:20px}.winner.show{display:grid;animation:pop .35s ease-out}@keyframes pop{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}.winner strong{font-size:clamp(65px,14vw,170px);color:#ffcf61;text-shadow:0 0 50px #ff741a}.winner span{display:block;font-size:clamp(28px,5vw,60px);margin-top:20px}.sound{position:fixed;right:14px;bottom:14px;border:1px solid #ffffff55;background:#28143dcc;color:white;border-radius:12px;padding:12px 16px;font-weight:bold;cursor:pointer}
-</style></head><body><main class="wrap"><div class="brand">ROHANS WEB • LIVE BINGO</div><h1>BINGO</h1><div class="number" id="number">—</div><div class="letter" id="letter">Waiting for the caller</div><div class="stage" id="stage">Waiting for game to start</div><div class="called" id="called">The numbers will appear here as they are called.</div></main><div class="winner" id="winner"><div><strong>BINGO!</strong><span id="winnerName"></span><span id="winnerType"></span></div></div><button class="sound" id="sound">Enable winner sound</button><audio id="winAudio" src="/bingo-win.mp3" preload="auto"></audio><script src="/socket.io/socket.io.js"></script><script>
-const socket=io({transports:["websocket","polling"]}),$=id=>document.getElementById(id);let soundReady=false,lastClaim="";
-function unlock(){const a=$("winAudio");a.volume=.85;const p=a.play();if(p&&p.then)p.then(()=>{a.pause();a.currentTime=0;soundReady=true;$("sound").textContent="Winner sound enabled"}).catch(()=>$("sound").textContent="Tap to enable sound");else soundReady=true}
-$("sound").onclick=unlock;document.addEventListener("pointerdown",()=>{if(!soundReady)unlock()},{once:true});
-function playWinner(){if(!soundReady)return;const a=$("winAudio");a.currentTime=0;a.play().catch(()=>{$("sound").textContent="Tap to enable winner sound"})}
-function update(s){if(!s)return;let n=Number(s.bingoNumber||0);$("number").textContent=n||"—";$("letter").textContent=n?((n<=15?"B":n<=30?"I":n<=45?"N":n<=60?"G":"O")+" • "+n):"Waiting for the caller";$("stage").textContent=s.bingoRound===2?"ROUND 2 • ONE ROW":s.bingoRound===3?"ROUND 3 • FULL HOUSE FINAL":"ROUND 1 • FULL HOUSE";$("called").textContent=(s.bingoCalled||[]).map(x=>(x<=15?"B":x<=30?"I":x<=45?"N":x<=60?"G":"O")+" "+x).join("   •   ")||"No numbers called yet";if(s.bingoWinner){$("winnerName").textContent=s.bingoWinner;$("winnerType").textContent=s.bingoWinnerType||"Winner";$("winner").classList.add("show")}else $("winner").classList.remove("show")}
-socket.on("connect",()=>socket.emit("identify","viewer"));socket.on("initial-state",update);socket.on("display-settings",update);socket.on("bingo-winner",d=>{$("winnerName").textContent=d.name||"A player";$("winnerType").textContent=d.type||"BINGO";$("winner").classList.add("show");playWinner()});
-</script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="refresh" content="0;url=/viewer.html">
+<title>Bingo TV has moved</title>
+<style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#180d28;color:white;font:20px Arial;text-align:center}a{color:#ffc45b}</style>
+</head>
+<body>
+<p>Bingo now displays on the main TV viewer. <a href="/viewer.html">Open the main viewer</a>.</p>
+<script>location.replace("/viewer.html");</script>
+</body>
+</html>
