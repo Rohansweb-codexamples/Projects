@@ -239,6 +239,16 @@ io.on("connection", (socket) => {
         io.emit("display-settings", currentState);
     });
 
+    socket.on("bingo-admin-winner", (data) => {
+        if (socket.role !== "controller") return;
+        const name = String(data && data.name || "A player").trim().slice(0,32) || "A player";
+        const type = String(data && data.type || "BINGO").slice(0,32);
+        currentState.bingoWinner = name;
+        currentState.bingoWinnerType = type;
+        io.emit("bingo-winner", { name, type, round: currentState.bingoRound });
+        io.emit("display-settings", currentState);
+    });
+
     socket.on("animation-mode", (data) => {
         if (socket.role !== "controller") return;
         const mode = Number(data && data.mode);
