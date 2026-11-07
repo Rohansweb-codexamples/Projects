@@ -263,7 +263,16 @@ io.on("connection", (socket) => {
             timerRunning: false,
             timerDuration: 0,
             timerStartedAt: 0,
-            timerElapsed: 0
+            timerElapsed: 0,
+            halloweenActive: false,
+            halloweenScores: [0,0,0],
+            halloweenSides: 2,
+            halloweenNames: ["Side 1","Side 2","Side 3"],
+            bingoActive: false,
+            bingoNumber: 0,
+            bingoCalled: [],
+            bingoWinner: "",
+            bingoLastCall: 0
         };
 
         io.emit("reset-display");
