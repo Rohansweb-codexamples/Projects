@@ -119,6 +119,7 @@ let currentState = {
     effect: "none",
     audioReactive: true,
     lights: true,
+    beamEnabled: true, beamColor: "#ff3d81", beamBrightness: .75, beamSpeed: .6, beamCount: 6, beamWidth: .14, beamMotion: "sweep", strobeEnabled: false,
     message: "",
     messageVisible: false,
     announcement: "",
@@ -212,7 +213,7 @@ io.on("connection", (socket) => {
 
     socket.on("display-settings", (data) => {
         if (socket.role !== "controller" || !data || typeof data !== "object") return;
-        const allowed = ["mediaQueue","mediaIndex","mediaRepeat","imageDuration","mediaPlaying","christmasCountdown","christmasLights","christmasSnow","christmasTheme","christmasTarget","christmasTitle","christmasGreeting","christmasGreetingVisible","mode","auto","speed","intensity","brightness","color","effect","audioReactive","lights","message","messageVisible","announcement","announcementVisible","screensaver","timerMode","timerRunning","timerDuration","timerStartedAt","timerElapsed","halloweenActive","halloweenScores","halloweenSides","halloweenNames","bingoActive","bingoNumber","bingoCalled","bingoWinner","bingoWinnerType","bingoRound","bingoLastCall"];
+        const allowed = ["mediaQueue","mediaIndex","mediaRepeat","imageDuration","mediaPlaying","christmasCountdown","christmasLights","christmasSnow","christmasTheme","christmasTarget","christmasTitle","christmasGreeting","christmasGreetingVisible","mode","auto","speed","intensity","brightness","color","effect","audioReactive","lights","beamEnabled","beamColor","beamBrightness","beamSpeed","beamCount","beamWidth","beamMotion","strobeEnabled","message","messageVisible","announcement","announcementVisible","screensaver","timerMode","timerRunning","timerDuration","timerStartedAt","timerElapsed","halloweenActive","halloweenScores","halloweenSides","halloweenNames","bingoActive","bingoNumber","bingoCalled","bingoWinner","bingoWinnerType","bingoRound","bingoLastCall"];
         for (const key of allowed) {
             if (Object.prototype.hasOwnProperty.call(data,key)) currentState[key]=data[key];
         }
